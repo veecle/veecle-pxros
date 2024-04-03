@@ -1,0 +1,75 @@
+# Keep in sync with xtask check!
+
+name: Clippy, formatting, docs and tests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  clippy:
+    name: cargo clippy
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2023-10-01
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: "true"
+      - run: cargo clippy --workspace --all-targets
+  tests:
+    name: cargo test
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2023-10-01
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: "true"
+      - run: cargo test -p veecle-pxros --all-targets --all-features
+      - run: cargo test -p task-macro --all-targets --all-features
+
+      # This requires --no-default-features to prevent conflicts between std and veecle-pxros panic impl.
+      - run: cargo test -p veecle-pxros --doc --no-default-features
+      - run: cargo test -p task-macro --doc --all-features
+  fmt:
+    name: cargo fmt
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2023-10-01
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: "true"
+      - run: cargo fmt --check --all
+  docs:
+    name: cargo doc
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: nightly-2023-10-01
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: "true"
+      - run: cargo doc --workspace --all-features

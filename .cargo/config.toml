@@ -1,0 +1,21 @@
+[net]
+git-fetch-with-cli = true
+
+[env]
+CC_tc162_htc_none = "clang"
+CFLAGS_tc162_htc_none = "--target=tricore -march=tc16"
+AR_tc162_htc_none = "llvm-ar"
+ARFLAGS_tc162_htc_none = "r"
+CFLAGS = "-gdwarf-2 -gstrict-dwarf"
+DEFMT_LOG = "info"
+
+[alias]
+xtask = "run --package xtask --"
+
+[target.tc162-htc-none]
+# Default dwarf version of v0.2.0 HighTec compiler is version 2 which is
+# incompatible with defmt location information
+rustflags = ["-Z", "dwarf-version=4"]
+
+[registries]
+htc-cargo-index = { index = "https://github.com/hightec-rt/htc-cargo-index" }

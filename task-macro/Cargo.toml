@@ -1,0 +1,23 @@
+[package]
+name = "task-macro"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+pxros = { workspace = true, optional = true }
+
+darling = "0.20.3"
+proc-macro2 = "1.0.29"
+proc-macro2-diagnostics = "0.10.1"
+quote = "1.0.9"
+syn = { version = "2.0.28", features = ["full", "extra-traits"] }
+
+[lib]
+proc-macro = true
+
+[features]
+# Make the macro aware of the auto_spawn attribute
+auto_spawn = []
+doc = ["pxros"]

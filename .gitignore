@@ -1,0 +1,7 @@
+.git-bridge
+Cargo.lock
+target/
+# FIXME: Work on a setup to make it easy to start with this project
+.vscode
+tools/
+.idea

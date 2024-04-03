@@ -1,0 +1,632 @@
+/**************************************************************************************************
+ * Project:  PXROS-HR BSP example
+ *
+ * Architecture:
+ *    TC3xx
+ *
+ * uC Derivative:
+ *    TC37x
+ *
+ * Description
+ *    Complete system linker file placing all necessary sections 
+ *    of PXROS-HR kernel and user tasks togehter with all other system parts.
+ *
+ * History
+ *    v1   06.2020   RO
+ *         - PXROS-HR BSP Base reference example
+ *
+ *    v2  08.2020  JS
+ *    	   - update to PXROS-HR v8.2.0
+ *
+ **************************************************************************************************
+ *
+ * SPDX-FileCopyrightText: HighTec EDV-Systeme GmbH
+ *
+ * SPDX-License-Identifier: Boost Software License - Version 1.0
+ *
+ *************************************************************************************************/
+
+
+/* ================================================================================================
+ * PREDEFINED OUTPUT SECTIONS TO MEMORY REGION ALIASES
+ * Aliases allow a quick change in memory placement
+ * ==============================================================================================*/
+
+/* BMHD sections */ 
+REGION_ALIAS("BMHD_ORIG", ucb_bmhd_orig)
+REGION_ALIAS("BMHD_COPY", ucb_bmhd_copy)
+
+/* CRT0 Boot Code Start */ 
+REGION_ALIAS("BOOT", int_flash0)
+
+/* Core0: Output sections to memory region mapping */
+REGION_ALIAS("CODE_CPU0_",      int_flash0)
+REGION_ALIAS("RODATA_CPU0_",    int_flash0)
+REGION_ALIAS("RAMCODE_CPU0_",   pspr_cpu0)
+REGION_ALIAS("DATA_DSPR_CPU0_", dspr_cpu0)
+REGION_ALIAS("DATA_DLMU_CPU0_", dlmu_cpu0)
+
+/* Core1: Output sections to memory region mapping */
+REGION_ALIAS("CODE_CPU1_",      int_flash1)
+REGION_ALIAS("RODATA_CPU1_",    int_flash1)
+REGION_ALIAS("RAMCODE_CPU1_",   pspr_cpu1)
+REGION_ALIAS("DATA_DSPR_CPU1_", dspr_cpu1)
+REGION_ALIAS("DATA_DLMU_CPU1_", dlmu_cpu1)
+
+/* Core2: Output sections to memory region mapping */
+REGION_ALIAS("CODE_CPU2_",      int_flash1)
+REGION_ALIAS("RODATA_CPU2_",    int_flash1)
+REGION_ALIAS("RAMCODE_CPU2_",   pspr_cpu2)
+REGION_ALIAS("DATA_DSPR_CPU2_", dspr_cpu2)
+REGION_ALIAS("DATA_DLMU_CPU2_", dlmu_cpu2)
+
+/* Common code and data */
+REGION_ALIAS("CODE",     int_flash0)
+REGION_ALIAS("RODATA",   int_flash0)
+REGION_ALIAS("DATA", 	 dlmu_cpu0)
+REGION_ALIAS("RAM_CODE", dlmu_cpu0)
+
+/* PXROS-HR code & data */ 
+REGION_ALIAS("CODE_MEM",     int_flash0)
+REGION_ALIAS("RODATA_MEM",   int_flash0)
+REGION_ALIAS("PXDATA_CPU0_", dspr_cpu0)
+REGION_ALIAS("PXDATA_CPU1_", dspr_cpu1)
+REGION_ALIAS("PXDATA_CPU2_", dspr_cpu2)
+REGION_ALIAS("BSS_CPU0_",    dspr_cpu0)
+REGION_ALIAS("BSS_CPU1_",    dspr_cpu1)
+REGION_ALIAS("BSS_CPU2_",    dspr_cpu2)
+
+
+/* ================================================================================================
+ * DEFAULT VALUES
+ * ==============================================================================================*/
+
+__HEAP_SIZE = DEFINED (__HEAP_SIZE) ? __HEAP_SIZE : 4K;
+
+/* ================================================================================================
+ * DEFMT SECTION
+ * ==============================================================================================*/
+
+/* The following section is licensed under MIT license from the `defmt` project
+(https://github.com/knurling-rs/defmt):
+
+Permission is hereby granted, free of charge, to any
+person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the
+Software without restriction, including without
+limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software
+is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice
+shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED
+TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT
+SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
+IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+*/
+
+/* exhaustively search for these symbols */
+EXTERN(_defmt_acquire);
+EXTERN(_defmt_release);
+EXTERN(__defmt_default_timestamp);
+EXTERN(__DEFMT_MARKER_TIMESTAMP_WAS_DEFINED);
+PROVIDE(_defmt_timestamp = __defmt_default_timestamp);
+PROVIDE(_defmt_panic = __defmt_default_panic);
+
+SECTIONS {
+  /* `1` specifies the start address of this virtual (`(INFO)`) section */
+  /* Tag number 0 is reserved for special uses, like as a format sequence terminator. */
+  .defmt 1 (INFO) :
+  {
+    /* For some reason the `1` above has no effect, but this does */
+    . = 1;
+
+    /* Format implementations for primitives like u8 */
+    *(.defmt.prim.*);
+
+    /* Everything user-defined */
+    *(.defmt.*);
+
+    __DEFMT_MARKER_END = .;
+
+    /* Symbols that aren't referenced by the program and */
+    /* should be placed at the end of the section */
+    KEEP(*(.defmt.end .defmt.end.*));
+  }
+}
+
+ASSERT(__DEFMT_MARKER_END < 65534, ".defmt section cannot contain more than 65534 interned strings");
+
+/* End of MIT licensed `defmt` section. */
+
+/* ================================================================================================
+ * BMHD headers
+ * ==============================================================================================*/
+ 
+SECTIONS
+{
+	/* Boot Mode Header - original values */
+	.bmhd_0_org 0xaf400000 : { KEEP (*(.bmhd_0_orig)) } > BMHD_ORIG
+	.bmhd_1_org 0xaf400200 : { KEEP (*(.bmhd_1_orig)) } > BMHD_ORIG
+	.bmhd_2_org 0xaf400400 : { KEEP (*(.bmhd_2_orig)) } > BMHD_ORIG
+	.bmhd_3_org 0xaf400600 : { KEEP (*(.bmhd_3_orig)) } > BMHD_ORIG
+
+	/* Boot Mode Header - copy values */
+	.bmhd_0_copy 0xaf401000 : { KEEP (*(.bmhd_0_copy)) } > BMHD_COPY
+	.bmhd_1_copy 0xaf401200 : { KEEP (*(.bmhd_1_copy)) } > BMHD_COPY
+	.bmhd_2_copy 0xaf401400 : { KEEP (*(.bmhd_2_copy)) } > BMHD_COPY
+	.bmhd_3_copy 0xaf401600 : { KEEP (*(.bmhd_3_copy)) } > BMHD_COPY
+}
+
+/* ================================================================================================
+ * Application BOOT code
+ * Address pointed by BMHD start address value
+ * ==============================================================================================*/
+
+SECTIONS
+{
+	/* NOTE: This region defines the startup code that should be executable by
+	 * kernel/system. The symbols __STARTUP_BEGIN and __STARTUP_END are, however,
+	 * not used in this example as the current MPU settings allows to execute any
+	 * code from the whole program flash memory. */
+	.crt0_boot :
+	{
+		__STARTUP_BEGIN = .;
+		KEEP (*(.crt0_boot.code))
+		. = ALIGN(8);
+		/* Aligning the end of region for MPU compatibility */
+		__STARTUP_END = .;
+	} > BOOT  
+}
+
+/* ================================================================================================
+ * TRAP EXCEPTION TABLES, HANDLERS
+ * 1. Default RESET TRAP table provided by BSP
+ * 2. PXROS-HR TRAP table replacing the RESET Default during the OS init process (.traptab) 
+ * ==============================================================================================*/
+
+SECTIONS
+{
+	/* NOTE: This region defines the trap vector table that should be executable by
+	 * kernel/system. The symbols __TRAP_TAB_BEGIN and __TRAP_TAB_END are, however,
+	 * not used in this example as the current MPU settings allows to execute any
+	 * code from the whole program flash memory. */
+	.bsp_trap_reset  : ALIGN(256)
+	{
+	    __TRAP_TAB_BEGIN = .;
+		KEEP (*(.bsp_trap_vector_table))
+		KEEP (*(.bsp_trap_handlers))
+	    *(.traptab)
+	    . = ALIGN(8);
+	    /* Aligning the end of region for MPU compatibility */
+	    __TRAP_TAB_END = .;
+	} > CODE
+}
+
+/* ================================================================================================
+ * PXROS-HR Interrupt tables
+ * ==============================================================================================*/
+ 
+SECTIONS
+{
+	/* NOTE: This region defines the interrupt vector table that should be executable by
+	 * kernel/system. The symbols __INT_TAB_BEGIN and __INT_TAB_END are, however, not
+	 * used in this example as the current MPU settings allows to execute any code from
+	 * the whole program flash memory. */
+	.inttab ALIGN(2048) :
+	{
+		__INT_TAB_BEGIN = .;
+		*(.inttab)
+		. = ALIGN(8);
+		/* Aligning the end of region for MPU compatibility */
+		__INT_TAB_END = .;
+	} > CODE_MEM
+}
+
+/* ================================================================================================
+ * Cores' CSA regions 
+ * Each core has its own CSA region list of size defined in PXROS-HR config
+ * ==============================================================================================*/
+
+/* in case of inactive core in system_cfg.h we need to provide a value to be able to link */
+PROVIDE(__CSA_SIZE_CPU0_ = 0);
+PROVIDE(__CSA_SIZE_CPU1_ = 0);
+PROVIDE(__CSA_SIZE_CPU2_ = 0);
+
+SECTIONS
+{
+	.CPU0.csa (NOLOAD) : ALIGN(64)
+	{ 
+		__CSA_BEGIN_CPU0_ = .; 
+		. +=  __CSA_SIZE_CPU0_;
+		__CSA_END_CPU0_ = .;
+	} > DATA_DSPR_CPU0_
+
+	.CPU1.csa (NOLOAD) : ALIGN(64)
+	{ 
+		__CSA_BEGIN_CPU1_ = .; 
+		. +=  __CSA_SIZE_CPU1_;
+		__CSA_END_CPU1_ = .;
+	} > DATA_DSPR_CPU1_
+
+	.CPU2.csa (NOLOAD) : ALIGN(64) 
+	{ 
+		__CSA_BEGIN_CPU2_ = .; 
+		. +=  __CSA_SIZE_CPU2_;
+		__CSA_END_CPU2_ = .;
+	} > DATA_DSPR_CPU2_
+
+}
+
+/* ================================================================================================
+ * CORE[x] PXROS-HR SYSTEM DISTRIBUTION
+ * Here, PXROS-HR kernel and Tasks are distributed in memory
+ * ==============================================================================================*/
+
+#include "ld-defs.h"
+/* PXROS-HR kernel image to be instantiated on each active core */
+#include "pxros-image.ld"
+
+/* ----- Core 0 resources ----- */
+#undef CORE_ID
+#define CORE_ID  CPU0
+
+
+#include "pxros-core.ld"
+#include "system_cfg.ld"
+#include "inittask.ld"
+
+#include "NameServer.ld"
+
+
+/* ----- Core 1 resources ----- */
+#undef CORE_ID
+#define CORE_ID  CPU1
+
+#include "pxros-core.ld"
+#include "system_cfg.ld"
+#include "inittask.ld"
+
+/* ----- Core 2 resources ------ */
+#undef CORE_ID
+#define CORE_ID CPU2
+
+#include "pxros-core.ld"
+#include "system_cfg.ld"
+#include "inittask.ld"
+
+
+/* ----- Restore CORE_ID ----- */
+#undef CORE_ID
+#undef CORE_SEC
+#undef CORE_SYM
+#define CORE_SEC(X) X
+#define CORE_SYM(X) X
+
+/* ================================================================================================
+ * Common CODE & DATA sections 
+ * ==============================================================================================*/
+
+SECTIONS
+{
+	/* Code */
+	.text :
+	{
+	    *(.text)
+	    *(.text.*)
+	} > CODE
+  
+  	/* Read-only data */
+	.rodata :
+	{
+	    *(.rodata)
+	    *(.rodata.*)
+	} > RODATA
+
+
+  	/* Constructors init array */
+    .init_array : ALIGN(4)
+	{
+		. = ALIGN(4);
+        PROVIDE_HIDDEN (__init_array_start = .);
+		LONG(((__init_array_end - __init_array_start)/4) - 2);
+        KEEP (*(SORT(.init_array.*)))
+        KEEP (*(.init_array*))
+        LONG(0)
+        PROVIDE_HIDDEN (__init_array_end = .);
+	} > RODATA
+    /* Destructors fini array */
+    .fini_array :
+    {
+        PROVIDE_HIDDEN (__fini_array_start = .);
+		LONG(((__fini_array_end - __fini_array_start)/4) - 2);
+        KEEP (*(SORT(.fini_array.*)))
+        KEEP (*(.fini_array*))
+        LONG(0)
+        PROVIDE_HIDDEN (__fini_array_end = .);
+    } >RODATA
+
+#if 0
+    .eh_frame_hdr : {
+    	PROVIDE(__eh_frame_hdr_start = .);
+    	*(.eh_frame_hdr)
+    	PROVIDE(__eh_frame_hdr_end = .);
+  	} > RODATA
+
+	.eh_frame :
+	{
+		PROVIDE(__eh_frame_start = .);
+		*(.eh_frame)
+		PROVIDE(__eh_frame_end = .);
+	} > RODATA
+	.gcc_except_table :
+	{
+		*(.gcc_except_table*)
+	} > RODATA
+#endif
+
+  	/* Small Read-only data */
+	.sdata2 : ALIGN(4)
+	{
+	   __SMALL_DATA2__ = . + 0x8000;
+	   *(.srodata)
+	   *(.srodata.*)
+	   *(.rodata_a1*)
+	   *(.rodata_a1.*)
+	} > RODATA
+
+	/* rw data - initialized */
+	.data : ALIGN(4)
+	{
+	   *(.data*);
+	} > DATA AT > RODATA
+
+	/* rw data - non-initialized */
+	.bss (NOLOAD) : ALIGN(4) 
+	{
+		*(.uninit*);
+	   	*(.bss*); 
+	   	*(COMMON);
+	} > DATA
+	
+	/* HEAP area for stdlib functions */
+	.heap : ALIGN(8) 
+	{
+	   __HEAP = .;
+	   . += __HEAP_SIZE;
+	   . = ALIGN(8);
+	   __HEAP_END = .;
+	} > DATA
+}
+
+/* ================================================================================================
+ * Veecle custom linking.
+ * ==============================================================================================*/
+
+SECTIONS
+{
+        /* Rust task list, collected in this section by the linker. See veecle-nox->pxros_rt->deploy.rs for more info */
+        .rust_auto_tasks :
+        {
+            __rust_auto_task_start = .;
+            KEEP(*(.rust_auto_tasks))
+            KEEP(*(.rust_auto_tasks.*))
+            __rust_auto_task_end = .;
+        } > RODATA
+
+        __DATA_START = ADDR(.data);
+        __DATA_END = ADDR(.data) + SIZEOF(.data);
+
+        __RODATA_START = ADDR(.rodata);
+        __RODATA_END = ADDR(.rodata) + SIZEOF(.rodata);
+
+        __BSS_START = ADDR(.bss);
+        __BSS_END = ADDR(.bss) + SIZEOF(.bss);
+}
+
+/* ================================================================================================
+ * CLEAR & COPY TABLES with END delimiter to support crt0 init
+ * Each core has its own table to process during its init to allow multicore execution. 
+ * Shared resources are inserted to Core[0] tables (the RESET core)
+ * clear_sec: 
+ *    data memory ranges to clear to zero
+ * copy_sec:  
+ *    data memory ranges that needs to be value initialized
+ *    (init values are stored in FLASH and copied to RAM)
+ * ==============================================================================================*/
+
+SECTIONS
+{
+	/* ---- CORE 0 ---- */
+	
+	.CPU0.clear_sec : ALIGN(8)
+	{
+		. = ALIGN(4);
+		PROVIDE(__clear_table_CPU0_ = .);
+	    LONG(0 + ADDR(.bss)); LONG(SIZEOF(.bss));
+	    LONG(0 + ADDR(.heap)); LONG(SIZEOF(.heap));
+        CLEAR_PXROS_MEMORY(CPU0);
+        CLEAR_TASKMEMORY(CPU0);
+        CLEAR_NAMESERVER;
+        CLEAR_INITTASK(CPU0);
+		LONG(-1); LONG(-1);
+	} > RODATA_CPU0_
+
+	.CPU0.copy_sec : ALIGN(8)
+	{
+	    PROVIDE(__copy_table_CPU0_ = .);
+	    LONG(LOADADDR(.data)); LONG(0 + ADDR(.data)); LONG(SIZEOF(.data));
+		LONG(-1); LONG(-1); LONG(-1);
+	} > RODATA_CPU0_
+
+	/* ---- CORE 1 ---- */
+	
+	.CPU1.clear_sec :
+	{
+		. = ALIGN(4);
+		PROVIDE(__clear_table_CPU1_ = .);
+        CLEAR_PXROS_MEMORY(CPU1);
+        CLEAR_TASKMEMORY(CPU1);
+        CLEAR_INITTASK(CPU1);
+		LONG(-1); LONG(-1);
+	} > RODATA_CPU1_
+	
+	.CPU1.copy_sec : ALIGN(8)
+	{
+		PROVIDE(__copy_table_CPU1_ = .);
+		LONG(-1); LONG(-1); LONG(-1);
+	} > RODATA_CPU1_
+
+	/* ---- CORE 2 ---- */
+	
+	.CPU2.clear_sec : ALIGN(8)
+	{
+		. = ALIGN(4);
+		PROVIDE(__clear_table_CPU2_ = .);
+        CLEAR_PXROS_MEMORY(CPU2);
+        CLEAR_TASKMEMORY(CPU2);
+        CLEAR_INITTASK(CPU2);
+		LONG(-1); LONG(-1);
+	} > RODATA_CPU2_
+	
+	.CPU2.copy_sec : ALIGN(8)
+	{
+		PROVIDE(__copy_table_CPU2_ = .);
+		LONG(-1); LONG(-1); LONG(-1);
+	} > RODATA_CPU2_
+}
+
+/* ============================================================================
+* CRT0 configuration table
+* ===========================================================================*/
+
+SECTIONS
+{
+  	.crt0_config : ALIGN(4)
+	{
+		PROVIDE(__crt0_config = .);             /* base of the config table */
+		
+		/* Core[0] */
+		
+		LONG(PXROS_SYSTEM_STACK_BEGIN_CPU0_);   /* STACK address */ 
+		LONG(PXROS_SYSTEM_STACK_SIZE_CPU0_);    /* STACK size */
+		LONG(ADDR(.CPU0.csa));                  /* CSA address */ 
+		LONG(SIZEOF(.CPU0.csa));                /* CSA size */
+		LONG(0);                                /* SDATA address */
+		LONG(__SMALL_DATA2__);                    /* SDATA2 address */
+		LONG(0);                                /* SDATA3 address */
+		LONG(_SMALL_DATA4_CPU0_);               /* SDATA4 address - PXROS-HR kernel */
+		LONG(ADDR(.CPU0.clear_sec));            /* CLEAR table */
+		LONG(ADDR(.CPU0.copy_sec));             /* COPY table */
+		LONG(__init_array_start);               /* init array table */
+		
+		/* Core[1] */
+		
+		LONG(PXROS_SYSTEM_STACK_BEGIN_CPU1_);   /* STACK address */ 
+		LONG(PXROS_SYSTEM_STACK_SIZE_CPU1_);    /* STACK size */
+		LONG(ADDR(.CPU1.csa));                  /* CSA address */ 
+		LONG(SIZEOF(.CPU1.csa));                /* CSA size */
+		LONG(0);                                /* SDATA address */
+		LONG(__SMALL_DATA2__);                    /* SDATA2 address */
+		LONG(0);                                /* SDATA3 address */
+		LONG(_SMALL_DATA4_CPU1_);               /* SDATA4 address - PXROS-HR kernel */
+		LONG(ADDR(.CPU1.clear_sec));            /* CLEAR table */
+		LONG(ADDR(.CPU1.copy_sec));             /* COPY table */
+		LONG(0);                                /* init array table */
+		
+		/* Core[2] */
+		
+		LONG(PXROS_SYSTEM_STACK_BEGIN_CPU2_);   /* STACK address */ 
+		LONG(PXROS_SYSTEM_STACK_SIZE_CPU2_);    /* STACK size */
+		LONG(ADDR(.CPU2.csa));                  /* CSA address */ 
+		LONG(SIZEOF(.CPU2.csa));                /* CSA size */
+		LONG(0);                                /* SDATA address */
+		LONG(__SMALL_DATA2__);                    /* SDATA2 address */
+		LONG(0);                                /* SDATA3 address */
+		LONG(_SMALL_DATA4_CPU2_);               /* SDATA4 address - PXROS-HR kernel */
+		LONG(ADDR(.CPU2.clear_sec));            /* CLEAR table */
+		LONG(ADDR(.CPU2.copy_sec));             /* COPY table */
+		LONG(0);                                /* CTOR table */
+		
+	} > RODATA 
+ } 
+
+
+/* ================================================================================================
+ * SYMBOLS
+ * ==============================================================================================*/
+
+SECTIONS
+{
+	/* complete Core 0 Local DSPR memory */
+	DSPR_BASE_0 = ORIGIN(dspr_cpu0);
+	DSPR_END_0  = ORIGIN(dspr_cpu0) + LENGTH(dspr_cpu0);
+
+	/* complete Core 1 Local DSPR memory */
+	DSPR_BASE_1 = ORIGIN(dspr_cpu1);
+	DSPR_END_1  = ORIGIN(dspr_cpu1) + LENGTH(dspr_cpu1);
+	  
+	/* complete Core 2 Local DSPR memory */
+	DSPR_BASE_2 = ORIGIN(dspr_cpu2);
+	DSPR_END_2  = ORIGIN(dspr_cpu2) + LENGTH(dspr_cpu2);
+	
+	/* Peripherals memory symbols for PXROS-HR system MPU setting */
+	PERIPHERAL_MEM_BASE = ORIGIN(periphery_base);
+	PERIPHERAL_MEM_END  = ORIGIN(periphery_end);
+
+    /* PXROS-HR read-only region delimiters -> whole Flash memory data read acess */
+    __TEXT_BEGIN = INT_FLASH_MEMORY_BASE;
+    __TEXT_END   = INT_FLASH_MEMORY_BASE + INT_FLASH_MEMORY_SIZE;
+
+	/* Upper and lower bounds of read-only region for which the
+     * PXROS system needs to have data-read access.
+     * This region covers the whole Flash memory */
+	PxTricSystemRodataLowerBound = INT_FLASH_MEMORY_BASE;
+	PxTricSystemRodataUpperBound = INT_FLASH_MEMORY_BASE + INT_FLASH_MEMORY_SIZE;
+
+	/* in case std lib functions are used */
+	_end = __HEAP_END;
+	PROVIDE(end = _end);
+
+	/* NULL symbol */
+	PROVIDE(NULL = 0);
+}
+
+/* ============================================================================
+ * Other sections
+ * ==========================================================================*/
+
+SECTIONS
+{
+	.comment 0 : { *(.comment) }
+	.debug 0 : { *(.debug) }
+	.line 0 : { *(.line) }
+	.debug_srcinfo 0 : { *(.debug_srcinfo) }
+	.debug_sfnames 0 : { *(.debug_sfnames) }
+	.debug_aranges 0 : { *(.debug_aranges) }
+	.debug_pubnames 0 : { *(.debug_pubnames) }
+	.debug_info 0 : { *(.debug_info) }
+	.debug_abbrev 0 : { *(.debug_abbrev) }
+	.debug_line 0 : { *(.debug_line) }
+	.debug_frame 0 : { *(.debug_frame) }
+	.debug_str 0 : { *(.debug_str) }
+	.debug_loc 0 : { *(.debug_loc) }
+	.debug_macinfo 0 : { *(.debug_macinfo) }
+	.debug_ranges 0 : { *(.debug_ranges) }
+	.debug_control_flow 0 : { *(.debug_control_flow) }
+	.debug_weaknames 0 : { *(.debug_weaknames) }
+	.debug_funcnames 0 : { *(.debug_funcnames) }
+	.debug_typenames 0 : { *(.debug_typenames) }
+	.debug_varnames 0 : { *(.debug_varnames) }
+	.version_info 0 : { *(.version_info) }
+}

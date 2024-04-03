@@ -1,0 +1,20 @@
+[package]
+name = "example-async"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish = false
+
+[lib]
+crate-type = ["staticlib"]
+bench = false
+test = false
+
+[dependencies]
+bitflags.workspace = true
+defmt.workspace = true
+futures.workspace = true
+heapless.workspace = true
+pxros.workspace = true
+veecle-pxros = { workspace = true, features = ["rt"] }

@@ -1,0 +1,63 @@
+[package]
+name = "veecle-pxros"
+authors.workspace = true
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description.workspace = true
+
+[dependencies]
+bitflags.workspace = true
+defmt.workspace = true
+futures.workspace = true
+heapless.workspace = true
+pxros.workspace = true
+static_cell.workspace = true
+pin-project.workspace = true
+
+task-macro = { path = "task-macro" }
+
+[features]
+default = ["rt"]
+# Enable this to import veecle default implementation for
+# 1. Panic handling
+# 2. Defmt logging
+# 3. Task autodeployment from Rust
+#
+# If disabled alternative implementation shall be provided
+rt = ["task-macro/auto_spawn"]
+
+[workspace]
+resolver = "2"
+members = [
+    "task-macro",
+    "examples/example-*",
+    "xtask",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Veecle GmbH - info@veecle.io"]
+edition = "2021"
+license = "Apache-2.0"
+homepage = "https://veecle.io"
+description = "A runtime for writing automotive and industrial Rust on top of HighTec's safety kernel for the Infineon AURIX™ platform."
+
+[workspace.dependencies]
+bitflags = "2.4"
+defmt = "0.3.2"
+futures = { version = "0.3", default-features = false, features = ["async-await"] }
+heapless = "0.8.0"
+static_cell = "2"
+pin-project = "1.1.3"
+
+pxros = { version = "0.2.0", registry = "htc-cargo-index" }
+pxros-hr = { version = "0.2.0", registry = "htc-cargo-index" }
+
+veecle-pxros = { path = "." }
+
+# Abort on panic since this is the default behavior on our intended target.
+[profile.dev]
+panic = "abort"
+[profile.release]
+panic = "abort"

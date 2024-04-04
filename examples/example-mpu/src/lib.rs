@@ -28,7 +28,7 @@ mod ex4_2;
 
 #[no_mangle]
 static TASK_LIST: &[TaskCreationConfig] = &[
-    TaskCreationConfig::new_from_task::<HiddenTask>("Ex4_Hidden_Creation"),
-    TaskCreationConfig::new_from_task::<Task1>("Task1_Creation"),
-    TaskCreationConfig::new_from_task::<Task2>("Task2_Creation"),
+    TaskCreationConfig::from_task::<HiddenTask>("Ex4_Hidden_Creation"),
+    TaskCreationConfig::from_task::<Task1>("Task1_Creation"),
+    TaskCreationConfig::from_task::<Task2>("Task2_Creation"),
 ];

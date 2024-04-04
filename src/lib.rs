@@ -39,13 +39,14 @@
 //! ```
 //! # use pxros::bindings::PxMbx_t;
 //! # use pxros::PxResult;
-//! # use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig};
+//! # use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
 //!
 //! /// Definition and configuration of auto-created tasks.
 //! #[no_mangle]
-//! static TASK_LIST: &[TaskCreationConfig] = &[TaskCreationConfig::override_core_and_priority::<
-//!     Task,
-//! >("Task_Creation", 0, 15)];
+//! static TASK_LIST: &[TaskCreationConfig] = &[TaskCreationConfigBuilder::from_task::<Task>()
+//!     .override_core(0)
+//!     .override_priority(15)
+//!     .build("Task_Creation")];
 //!
 //! pub(crate) struct Task;
 //! impl PxrosTask for Task {

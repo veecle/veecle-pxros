@@ -37,7 +37,7 @@ use core::ffi::CStr;
 use pxros::bindings::PxMbx_t;
 use pxros::PxResult;
 use veecle_pxros::pxros::name_server::TaskName;
-use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig};
+use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
 
 use crate::backend::FlagMessageTask;
 
@@ -83,8 +83,14 @@ bitflags::bitflags! {
 /// Definition and configuration of auto-created tasks.
 #[no_mangle]
 static TASK_LIST: &[TaskCreationConfig] = &[
-    TaskCreationConfig::override_core_and_priority::<AsyncExecutorTask>("AsyncExecutor_Creation", 0, 15),
-    TaskCreationConfig::override_core_and_priority::<FlagMessageTask>("Flag_Message_Task_Creation", 0, 15),
+    TaskCreationConfigBuilder::from_task::<AsyncExecutorTask>()
+        .override_core(0)
+        .override_priority(15)
+        .build("AsyncExecutor_Creation"),
+    TaskCreationConfigBuilder::from_task::<FlagMessageTask>()
+        .override_core(0)
+        .override_priority(15)
+        .build("Flag_Message_Task_Creation"),
 ];
 
 pub(crate) struct AsyncExecutorTask;

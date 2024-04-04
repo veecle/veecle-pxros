@@ -34,7 +34,7 @@ mod ex1_3;
 
 /// Definition and configuration of auto-created tasks.
 #[no_mangle]
-static TASK_LIST: &[TaskCreationConfig] = &[TaskCreationConfig::new_from_task::<Ex1Task>("Ex1Task_Creation")];
+static TASK_LIST: &[TaskCreationConfig] = &[TaskCreationConfig::from_task::<Ex1Task>("Ex1Task_Creation")];
 
 /// A PXROS task.
 /// Its functionality and configuration is defined in the [`PxrosTask`] trait.

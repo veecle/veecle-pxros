@@ -18,7 +18,7 @@ use pxros::PxResult;
 use veecle_pxros::pxros::events::{Receiver, Signaller};
 use veecle_pxros::pxros::messages::MailSender;
 use veecle_pxros::pxros::name_server::TaskName;
-use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig};
+use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
 use veecle_pxros::pxros::ticker::{AsyncTicker, Ticker};
 use veecle_pxros::pxros_run;
 
@@ -61,10 +61,22 @@ bitflags::bitflags! {
 
 #[no_mangle]
 static TASK_LIST: &[TaskCreationConfig] = &[
-    TaskCreationConfig::override_core_and_priority::<TaskA>("TaskA_Creation", 0, 10),
-    TaskCreationConfig::override_core_and_priority::<TaskB>("TaskB_Creation", 1, 10),
-    TaskCreationConfig::override_core_and_priority::<AsyncExecutorTask>("AsyncExecutor_Creation", 0, 5),
-    TaskCreationConfig::override_core_and_priority::<TaskServer>("TaskServer_Creation", 0, 8),
+    TaskCreationConfigBuilder::from_task::<TaskA>()
+        .override_core(0)
+        .override_priority(10)
+        .build("TaskA_Creation"),
+    TaskCreationConfigBuilder::from_task::<TaskB>()
+        .override_core(1)
+        .override_priority(10)
+        .build("TaskB_Creation"),
+    TaskCreationConfigBuilder::from_task::<AsyncExecutorTask>()
+        .override_core(0)
+        .override_priority(5)
+        .build("AsyncExecutor_Creation"),
+    TaskCreationConfigBuilder::from_task::<TaskServer>()
+        .override_core(0)
+        .override_priority(8)
+        .build("TaskServer_Creation"),
 ];
 
 /// This task sends an event to server through Pxros in a periodic manner

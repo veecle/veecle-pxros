@@ -25,7 +25,7 @@
 #![no_std]
 
 use veecle_pxros::pxros::name_server::TaskName;
-use veecle_pxros::pxros::task::TaskCreationConfig;
+use veecle_pxros::pxros::task::{TaskCreationConfig, TaskCreationConfigBuilder};
 
 use crate::backend::ValidationTask;
 use crate::ex2_1::Ex2_1Task;
@@ -75,9 +75,24 @@ mod ex2_4;
 /// Definition and configuration of auto-created tasks.
 #[no_mangle]
 static TASK_LIST: &[TaskCreationConfig] = &[
-    TaskCreationConfig::override_core_and_priority::<ValidationTask>("ValidationTask_Creation", 0, 15),
-    TaskCreationConfig::override_core_and_priority::<Ex2_1Task>("Ex2_1_Creation", 1, 18),
-    TaskCreationConfig::override_core_and_priority::<Ex2_2Task>("Ex2_2_Creation", 1, 15),
-    TaskCreationConfig::override_core_and_priority::<Ex2_3Task>("Ex2_3_Creation", 2, 15),
-    TaskCreationConfig::override_core_and_priority::<Ex2_4Task>("Ex2_4_Creation", 1, 15),
+    TaskCreationConfigBuilder::from_task::<ValidationTask>()
+        .override_core(0)
+        .override_priority(15)
+        .build("ValidationTask_Creation"),
+    TaskCreationConfigBuilder::from_task::<Ex2_1Task>()
+        .override_core(1)
+        .override_priority(18)
+        .build("Ex2_1_Creation"),
+    TaskCreationConfigBuilder::from_task::<Ex2_2Task>()
+        .override_core(1)
+        .override_priority(15)
+        .build("Ex2_2_Creation"),
+    TaskCreationConfigBuilder::from_task::<Ex2_3Task>()
+        .override_core(2)
+        .override_priority(15)
+        .build("Ex2_3_Creation"),
+    TaskCreationConfigBuilder::from_task::<Ex2_4Task>()
+        .override_core(1)
+        .override_priority(15)
+        .build("Ex2_4_Creation"),
 ];

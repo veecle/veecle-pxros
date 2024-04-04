@@ -19,3 +19,4 @@ rustflags = ["-Z", "dwarf-version=4"]
 
 [registries]
 htc-cargo-index = { index = "https://github.com/hightec-rt/htc-cargo-index" }
+bluewind = { index = "https://github.com/bluewind-embedded-systems/bw-cargo-index" }

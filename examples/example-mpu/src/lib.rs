@@ -16,6 +16,19 @@
 //! After that, it must be allowed to work again. If all is correct it will print the flag.
 #![no_std]
 
+use veecle_pxros::pxros::task::TaskCreationConfig;
+
+use crate::backend::HiddenTask;
+use crate::ex4_1::Task1;
+use crate::ex4_2::Task2;
+
 mod backend;
 mod ex4_1;
 mod ex4_2;
+
+#[no_mangle]
+static TASK_LIST: &[TaskCreationConfig] = &[
+    TaskCreationConfig::new_from_task::<HiddenTask>("Ex4_Hidden_Creation"),
+    TaskCreationConfig::new_from_task::<Task1>("Task1_Creation"),
+    TaskCreationConfig::new_from_task::<Task2>("Task2_Creation"),
+];

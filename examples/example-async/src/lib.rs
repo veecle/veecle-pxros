@@ -31,14 +31,20 @@
 #![feature(type_alias_impl_trait)]
 #![feature(macro_metavar_expr)]
 #![feature(exclusive_range_pattern)]
+
+use core::ffi::CStr;
+
 use pxros::bindings::PxMbx_t;
 use pxros::PxResult;
 use veecle_pxros::pxros::name_server::TaskName;
+use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig};
+
+use crate::backend::FlagMessageTask;
 
 /// This is pxros-specific way on how to identify tasks at runtime via a name.
 ///
 /// In this case the name "2" can be used to query the runtime ID of
-/// the task via [veecle_pxros::pxros::name_server].
+/// the task via [veecle_nos::pxros::name_server].
 const FLAG_TASK_NAME: TaskName = TaskName::new(2);
 
 /// User task name
@@ -74,18 +80,38 @@ bitflags::bitflags! {
     }
 }
 
-/// User executor code.
-#[veecle_pxros::pxros_task(task_name = USER_TASK_NAME, auto_spawn(core = 0, priority = 15))]
-fn async_executor(mailbox: PxMbx_t) -> PxResult<()> {
-    // Solution for (3.1)
-    ex3_1::ex3_1_solution(mailbox);
+/// Definition and configuration of auto-created tasks.
+#[no_mangle]
+static TASK_LIST: &[TaskCreationConfig] = &[
+    TaskCreationConfig::override_core_and_priority::<AsyncExecutorTask>("AsyncExecutor_Creation", 0, 15),
+    TaskCreationConfig::override_core_and_priority::<FlagMessageTask>("Flag_Message_Task_Creation", 0, 15),
+];
 
-    // Solution for (3.2)
-    ex3_2::ex3_2_solution(mailbox);
+pub(crate) struct AsyncExecutorTask;
+impl PxrosTask for AsyncExecutorTask {
+    fn task_name() -> Option<TaskName> {
+        Some(USER_TASK_NAME)
+    }
 
-    // Solution for (3.3)
-    ex3_3::ex3_3_solution(mailbox);
+    fn debug_name() -> &'static CStr {
+        CStr::from_bytes_with_nul("AsyncExecutor\0".as_bytes())
+            .expect("The debug name should be a valid, zero-terminated C string.")
+    }
 
-    // Panic to give access to others
-    defmt::panic!("The exercise is terminated")
+    /// User executor code.
+    fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
+        let (task_debug_name, log_task_id) = <Self as PxrosTask>::log_id();
+
+        // Solution for (3.1)
+        Self::ex3_1_solution(mailbox);
+
+        // Solution for (3.2)
+        Self::ex3_2_solution(mailbox);
+
+        // Solution for (3.3)
+        Self::ex3_3_solution(mailbox);
+
+        // Panic to give access to others
+        defmt::panic!("[{}: {}] The exercise is terminated", task_debug_name, log_task_id)
+    }
 }

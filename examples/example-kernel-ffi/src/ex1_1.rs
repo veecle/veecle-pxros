@@ -1,4 +1,8 @@
 //! Exercise 1.1
+use veecle_pxros::pxros::task::PxrosTask;
+
+use crate::Ex1Task;
+
 extern "Rust" {
     /// This is an example of a Foreign Function Interface (FFI). It is unsafe
     /// to call directly as the compiler cannot guarantee the design contract
@@ -6,10 +10,14 @@ extern "Rust" {
     fn secret_flag() -> &'static str;
 }
 
-/// The function should call (via `unsafe`) the FFI and print
-/// the returned flag via the [defmt] framework.
-pub fn ex1_1_solution() {
-    let flag = unsafe { secret_flag() };
+impl Ex1Task {
+    /// The function should call (via `unsafe`) the FFI and print
+    /// the returned flag via the [defmt] framework.
+    pub fn ex1_1_solution() {
+        let (task_debug_name, task_id) = <Self as PxrosTask>::log_id();
 
-    defmt::info!("The (1.1) flag is {}", flag);
+        let flag = unsafe { secret_flag() };
+
+        defmt::info!("[{}: {}] The (1.1) flag is: {}", task_debug_name, task_id, flag);
+    }
 }

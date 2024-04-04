@@ -25,11 +25,18 @@
 #![no_std]
 
 use veecle_pxros::pxros::name_server::TaskName;
+use veecle_pxros::pxros::task::TaskCreationConfig;
+
+use crate::backend::ValidationTask;
+use crate::ex2_1::Ex2_1Task;
+use crate::ex2_2::Ex2_2Task;
+use crate::ex2_3::Ex2_3Task;
+use crate::ex2_4::Ex2_4Task;
 
 /// This is pxros-specific way on how to identify tasks at runtime via a name.
 ///
 /// In this case the name "2" can be used to query the runtime ID of
-/// the task via [veecle_pxros::pxros::name_server].
+/// the task via [veecle_nos::pxros::name_server].
 const VALIDATION_TASK_NAME: TaskName = TaskName::new(2);
 /// Task's name for exercise 2.3
 const RECEIVE_TASK_NAME: TaskName = TaskName::new(3);
@@ -64,3 +71,13 @@ mod ex2_1;
 mod ex2_2;
 mod ex2_3;
 mod ex2_4;
+
+/// Definition and configuration of auto-created tasks.
+#[no_mangle]
+static TASK_LIST: &[TaskCreationConfig] = &[
+    TaskCreationConfig::override_core_and_priority::<ValidationTask>("ValidationTask_Creation", 0, 15),
+    TaskCreationConfig::override_core_and_priority::<Ex2_1Task>("Ex2_1_Creation", 1, 18),
+    TaskCreationConfig::override_core_and_priority::<Ex2_2Task>("Ex2_2_Creation", 1, 15),
+    TaskCreationConfig::override_core_and_priority::<Ex2_3Task>("Ex2_3_Creation", 2, 15),
+    TaskCreationConfig::override_core_and_priority::<Ex2_4Task>("Ex2_4_Creation", 1, 15),
+];

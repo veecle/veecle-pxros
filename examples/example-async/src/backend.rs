@@ -1,5 +1,6 @@
 //! Hidden backend code for the exercise 3 to validate flags
 
+use core::ffi::CStr;
 use core::sync::atomic::AtomicU32;
 use core::sync::atomic::Ordering::Relaxed;
 use core::time::Duration;
@@ -9,6 +10,7 @@ use pxros::PxResult;
 use veecle_pxros::pxros::events::{Receiver, Signaller};
 use veecle_pxros::pxros::messages::MailSender;
 use veecle_pxros::pxros::name_server::{NameServer, TaskName};
+use veecle_pxros::pxros::task::PxrosTask;
 use veecle_pxros::pxros::ticker::Ticker;
 use veecle_pxros::pxros::time::time_since_boot;
 
@@ -137,34 +139,45 @@ bitflags::bitflags! {
     }
 }
 
-#[veecle_pxros::pxros_task(task_name = VALIDATION_TASK_NAME, auto_spawn(core = 0, priority = 15))]
-fn flag_message_task(mailbox: PxMbx_t) -> PxResult<()> {
-    // Get the user task
-    let user_task = NameServer::query(&MAIN_TASK_NAME, FlagEvents::Ticker)?;
+pub(crate) struct FlagMessageTask;
+impl PxrosTask for FlagMessageTask {
+    fn task_name() -> Option<TaskName> {
+        Some(VALIDATION_TASK_NAME)
+    }
 
-    // Get a sender for the flag
-    let mut sender = MailSender::new(user_task)?;
-    let mut signaller = Signaller::new(FlagEvents::Terminate, user_task);
-    let mut start_signal = Receiver::new(mailbox, FlagEvents::StartTransmission);
+    fn debug_name() -> &'static CStr {
+        CStr::from_bytes_with_nul("FlagMessageTask\0".as_bytes())
+            .expect("The debug name should be a valid, zero-terminated C string.")
+    }
 
-    loop {
-        let (event, _) = start_signal.receive();
-        if event.contains(FlagEvents::StartTransmission) {
-            break;
+    fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
+        // Get the user task
+        let user_task = NameServer::query(&MAIN_TASK_NAME, FlagEvents::Ticker)?;
+
+        // Get a sender for the flag
+        let mut sender = MailSender::new(user_task)?;
+        let mut signaller = Signaller::new(FlagEvents::Terminate, user_task);
+        let mut start_signal = Receiver::new(mailbox, FlagEvents::StartTransmission);
+
+        loop {
+            let (event, _) = start_signal.receive();
+            if event.contains(FlagEvents::StartTransmission) {
+                break;
+            }
         }
-    }
 
-    const FLAG: &[u8] = b"PdfADhtQnH";
-    let mut ticker = Ticker::every(FlagEvents::Ticker, Duration::from_millis(250))?;
+        const FLAG: &[u8] = b"PdfADhtQnH";
+        let mut ticker = Ticker::every(FlagEvents::Ticker, Duration::from_millis(250))?;
 
-    for &byte in FLAG {
-        sender.send_bytes(&[byte])?;
-        ticker.wait();
-    }
+        for &byte in FLAG {
+            sender.send_bytes(&[byte])?;
+            ticker.wait();
+        }
 
-    signaller.signal()?;
+        signaller.signal()?;
 
-    loop {
-        ticker.wait();
+        loop {
+            ticker.wait();
+        }
     }
 }

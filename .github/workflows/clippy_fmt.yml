@@ -39,11 +39,9 @@ jobs:
         with:
           cache-on-failure: "true"
       - run: cargo test -p veecle-pxros --all-targets --all-features
-      - run: cargo test -p task-macro --all-targets --all-features
 
       # This requires --no-default-features to prevent conflicts between std and veecle-pxros panic impl.
       - run: cargo test -p veecle-pxros --doc --no-default-features
-      - run: cargo test -p task-macro --doc --all-features
   fmt:
     name: cargo fmt
     runs-on: ubuntu-latest

@@ -9,11 +9,6 @@ use pxros::PxResult;
 
 use super::name_server::TaskName;
 
-// TODO
-// RustDeploy
-// commit messages
-// commit separation
-
 /// Trait defining a PXROS task.
 ///
 /// This trait allows defining a PXROS task by overwriting its default functions.

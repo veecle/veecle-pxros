@@ -34,13 +34,26 @@
 //! veecle-pxros = { workspace = true, features = ["rt"] }
 //! ```
 //!
-//! 2) In the lib.rs define a PXROS task that will be auto-spawned on
-//! core 0 with priority 10.
-//! ```ignore,
-//! #[veecle_pxros::pxros_task(auto_spawn(core = 0, priority = 10))]
-//! fn hello_world(_: PxMbx_t) -> PxResult<()> {
-//!     defmt::info!("Hello World");
-//!     Ok(())
+//! 2) In the lib.rs define a struct implementing the [`PxrosTask`](crate::pxros::task::PxrosTask) trait and add it to
+//!    the `TaskList` static to automatically start it.
+//! ```
+//! # use pxros::bindings::PxMbx_t;
+//! # use pxros::PxResult;
+//! # use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig};
+//!
+//! /// Definition and configuration of auto-created tasks.
+//! #[no_mangle]
+//! static TASK_LIST: &[TaskCreationConfig] = &[TaskCreationConfig::override_core_and_priority::<
+//!     Task,
+//! >("Task_Creation", 0, 15)];
+//!
+//! pub(crate) struct Task;
+//! impl PxrosTask for Task {
+//!     //! / User executor code.
+//!     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
+//!         let (task_debug_name, log_task_id) = <Self as PxrosTask>::log_id();
+//!         defmt::panic!("[{}: {}] Example task terminated!", task_debug_name, log_task_id)
+//!     }
 //! }
 //! ```
 //!
@@ -58,4 +71,3 @@ pub mod executor;
 pub mod pxros;
 
 pub use static_cell::StaticCell;
-pub use task_macro::pxros_task;

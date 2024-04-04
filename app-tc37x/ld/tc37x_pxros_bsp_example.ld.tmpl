@@ -415,15 +415,6 @@ SECTIONS
 
 SECTIONS
 {
-        /* Rust task list, collected in this section by the linker. See veecle-nox->pxros_rt->deploy.rs for more info */
-        .rust_auto_tasks :
-        {
-            __rust_auto_task_start = .;
-            KEEP(*(.rust_auto_tasks))
-            KEEP(*(.rust_auto_tasks.*))
-            __rust_auto_task_end = .;
-        } > RODATA
-
         __DATA_START = ADDR(.data);
         __DATA_END = ADDR(.data) + SIZEOF(.data);
 

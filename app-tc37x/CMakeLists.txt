@@ -62,9 +62,33 @@ add_custom_target(
     COMMAND_EXPAND_LISTS
 )
 
+# Path to BaseSw folder from iLLD
+set(BaseSw ${CMAKE_SOURCE_DIR}/../iLLD/iLLD_1_0_1_16_0__TC37A/Src/BaseSw)
+
+file ( GLOB_RECURSE ILLDSRCS ${BaseSw}/iLLD/*.c ${BaseSw}/Service/*.c ${BaseSw}/iLLD/*.c ${BaseSw}/Infra/Platform/*.c ${BaseSw}/Infra/Sfr/*.c)
 file ( GLOB_RECURSE SRCS pxros/*.c pxros/*.cpp src/*.c)
 file ( GLOB_RECURSE LIBSRCS bsp/*c crt0/*.S machine/*.c)
 file ( GLOB_RECURSE LIBOS libos/*.c)
+
+# Uncomment if when building iLLD library from sources
+# add_library(illd STATIC ${ILLDSRCS})
+# target_include_directories(illd PRIVATE
+#     illd/illd_cfg
+#     ${BaseSw}/iLLD/TC37A/Tricore
+#     ${BaseSw}/Infra/Platform
+#     ${BaseSw}/Service/CpuGeneric
+#     ${BaseSw}/Infra/Sfr/TC37A/_Reg
+#     ${BaseSw}/iLLD/TC37A/Tricore/Gtm/Atom/PwmHl
+#     ${BaseSw}/iLLD/TC37A/Tricore/Gtm/Tom/PwmHl
+# )
+# target_compile_definitions(illd PUBLIC
+#     -DNO_WARN_MACHINE_INTRINSICS
+#     -D__TC37XX__
+#     -DTC37XB
+#     -D${BOARD}
+#     -DBSP_ISR_SUPPORT_DISABLED
+#     -DUC_NB_CORES=${UC_NB_CORES}
+# )
 
 add_library(bsp STATIC ${LIBSRCS} )
 target_include_directories(bsp PRIVATE
@@ -102,6 +126,15 @@ target_include_directories(app PRIVATE
     crt0
     machine
     .
+    illd/illd_cfg
+    pxros/tasks/GETHDriver/GETHDriver/include
+    pxros/tasks/GETHDriver/GETHDriver/lib
+    pxros/tasks/GETHDriver/pxnet/include
+    pxros/tasks/GETHDriver/pxnet/DriverTask/include
+    ${BaseSw}/iLLD/TC37A/Tricore
+    ${BaseSw}/Infra/Platform
+    ${BaseSw}/Service/CpuGeneric
+    ${BaseSw}/Infra/Sfr/TC37A/_Reg
     ${px_includes})
 
 target_compile_definitions(app PUBLIC
@@ -117,10 +150,13 @@ add_dependencies(app tc37x_pxros_bsp_example.ld)
 
 file(WRITE null.c "")
 add_executable(${PROJECT_NAME}.elf null.c )
-target_link_libraries(${PROJECT_NAME}.elf PUBLIC app bsp os)
+target_link_libraries(${PROJECT_NAME}.elf PUBLIC app bsp os illd)
 
 # set the build type of the rust application values: debug/release
 set(RUST_BUILD_TYPE debug)
+
+# Comment next line when building iLLD library from sources
+target_link_directories(${PROJECT_NAME}.elf BEFORE PUBLIC ${CMAKE_SOURCE_DIR}/illd)
 
 # This picks the linked rust library for the executor folder and configure
 # all linker stuff

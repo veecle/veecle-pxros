@@ -29,6 +29,7 @@
  * ==============================================================================================*/
 
 #define SYSTIME_ISR_PRIO          2
+#define GETH_ISR_PRIO             10
 
 
 /* ================================================================================================
@@ -48,5 +49,6 @@
  *     - sequential for tasks executing on the same core
  * Lower number = higher priority (on the contrary to HW interrupt)
  * ==============================================================================================*/
+#define GETH_DRIVER_PRIO          8
 
 #endif

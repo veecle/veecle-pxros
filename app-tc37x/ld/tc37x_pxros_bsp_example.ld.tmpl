@@ -76,6 +76,13 @@ REGION_ALIAS("BSS_CPU0_",    dspr_cpu0)
 REGION_ALIAS("BSS_CPU1_",    dspr_cpu1)
 REGION_ALIAS("BSS_CPU2_",    dspr_cpu2)
 
+/* EthDrvTask data */
+REGION_ALIAS("ETH_MEM_CPU0_", dspr_cpu0)
+REGION_ALIAS("ETH_MEM_CPU1_", dspr_cpu1)
+REGION_ALIAS("ETH_MEM_CPU2_", dspr_cpu2)
+/* All remaining ethernet data will also go into DSPR0 */
+REGION_ALIAS("ETH_MEM", dspr_cpu0)
+
 
 /* ================================================================================================
  * DEFAULT VALUES
@@ -287,6 +294,7 @@ SECTIONS
 #include "inittask.ld"
 
 #include "NameServer.ld"
+#include "ethdrvtask.ld"	/* PxNet-compatible Ethernet driver task */
 
 
 /* ----- Core 1 resources ----- */

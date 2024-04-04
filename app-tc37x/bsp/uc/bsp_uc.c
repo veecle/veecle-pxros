@@ -920,6 +920,8 @@ void bsp_uc_InitClock(void)
     con1.U = SCU_CCUCON1.U;
     con1.B.QSPIDIV = UC_CCU_QSPI_DIV;
     con1.B.CLKSELQSPI = UC_CCU_QSPI_CLKSEL;
+    con1.B.MCANDIV = UC_CCU_MCAN_DIV;
+    con1.B.CLKSELMCAN = UC_CCU_MCAN_CLKSEL;
     bsp_uc_scu_SetCcuCon(&SCU_CCUCON1.U, con1.U, 1);
 
     /* Flash modules - timing */

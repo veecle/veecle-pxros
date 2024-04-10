@@ -74,6 +74,7 @@
 
 /* Peripheral clocks needed in BSP example */
 #define UC_QSPI_CLOCK             200 /* MAX=200; source = fPLL1 | fPLL2 | fBACK */
+#define UC_MCAN_CLOCK             80  /* source = fPLL1 | fPLL1/2 | fBACK */
 #define UC_STM_CLOCK              100 /* MAX=100; source = fPLL0 | fBACK */
 
 /* BSP supportive time macros */
@@ -272,6 +273,12 @@
 #define UC_CCU_QSPI_CLKSEL        2 /* fPLL2 use as clock source for fSOURCEQSPI */
 #if ((UC_CCU_QSPI_DIV * UC_QSPI_CLOCK) != UC_PLL2_CLOCK)
 #error Wrong QSPI clock setting, not a whole number divider
+#endif
+
+#define UC_CCU_MCAN_DIV           ((UC_PLL1_CLOCK/2) / UC_MCAN_CLOCK)
+#define UC_CCU_MCAN_CLKSEL        1 /* fMCANI is used as clock source fMCAN */
+#if ((UC_CCU_MCAN_DIV * UC_MCAN_CLOCK) != (UC_PLL1_CLOCK/2))
+#error Wrong MCAN clock setting, not a whole number divider
 #endif
 
 #endif /* UC_TC37_SPEC_H */

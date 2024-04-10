@@ -56,6 +56,8 @@ pxros-hr = { version = "0.2.0", registry = "htc-cargo-index" }
 
 veecle-pxros = { path = "." }
 
+bw-r-drivers-tc37x = { git = "https://github.com/bluewind-embedded-systems/bw-r-drivers-tc37x.git", branch = "main" }
+
 # Abort on panic since this is the default behavior on our intended target.
 [profile.dev]
 panic = "abort"

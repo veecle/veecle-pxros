@@ -152,7 +152,7 @@ pub fn run(function: TokenStream, arguments: TokenStream) -> Result<TokenStream,
                     ts_context: PxTaskContext_ct(&TASK_CONTEXT as *const _),
                     ts_protect_region: PxProtectRegion_ct(&TASK_REGIONS[0] as *const _),
                     ts_privileges: PxArg_t(Privileges::#privileges as i32),
-                    ts_accessrights: 0,
+                    ts_accessrights: PXACCESS_HANDLERS | PXACCESS_INSTALL_HANDLERS,
                     // Priority/scheduling
                     ts_prio: prio,
                     ts_timeslices: PxTicks_t(0),

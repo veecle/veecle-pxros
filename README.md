@@ -65,7 +65,7 @@ Next, **CMake** is used to compile the PXROS kernel and C tasks defined in the *
 
 3. If on Windows, install Infineon's [DAS and MEMTOOL](https://www.infineon.com/cms/en/tools/aurix-tools/free-tools/infineon): these tools are required to utilize [tricore-probe](https://github.com/veecle/tricore-probe). If you are using Linux, please follow the guidelines provided in the repository.
 
-4. Install **tricore-probe** via `cargo install --git https://github.com/veecle/tricore-probe`. Make sure the listed requirements are installed.
+4. Install **tricore-probe** via `cargo +nightly install --git https://github.com/veecle/tricore-probe tricore-probe`. Make sure the listed requirements are installed.
 
 For additional installation instructions or troubleshooting please also visit [Bluewind's repository](https://github.com/bluewind-embedded-systems/bw-r-drivers-tc37x).
 

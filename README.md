@@ -69,6 +69,10 @@ Next, **CMake** is used to compile the PXROS kernel and C tasks defined in the *
 
 For additional installation instructions or troubleshooting please also visit [Bluewind's repository](https://github.com/bluewind-embedded-systems/bw-r-drivers-tc37x).
 
+#### Troubleshooting
+
+* Make sure that the environment variable `LIBCLANG_PATH` points to the HighTec's toolchain.
+
 ## Building and running
 
 This repository provides a utility tool (`xtask`) to facilitate compilation and execution on a connected board or on the TSIM emulator.

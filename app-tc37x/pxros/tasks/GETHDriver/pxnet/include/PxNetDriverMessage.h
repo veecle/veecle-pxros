@@ -14,7 +14,7 @@ extern "C" {
 
 typedef unsigned long long PxMsgMetadata_t;
 
-typedef enum
+typedef enum __attribute__((__packed__))
 {
     PXNET_DRV_INPKT,
     PXNET_DRV_OUTPKT,
@@ -24,11 +24,11 @@ typedef enum
 
 typedef union
 {
-    struct
+    struct __attribute__((__packed__))
     {
-        PxNetMsgType_t msg_type : 8;
+        PxNetMsgType_t msg_type;
         PxUInt8_t instance;
-        struct
+        struct __attribute__((__packed__))
         {
             PxUInt16_t buf_len;
             PxUInt16_t actual_len;

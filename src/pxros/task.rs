@@ -399,7 +399,7 @@ where
 /// Task creation configuration used to override aspects of the [`TaskNativeCreationConfig`] in [`TaskCreationConfig`].
 // For function pointer reasoning, see `TaskNativeCreationConfig`.
 #[derive(Debug, Copy, Clone)]
-pub struct TaskCreationConfigOverrides {
+struct TaskCreationConfigOverrides {
     core: Option<PxUInt_t>,
     object_pool: Option<PxOpool_t>,
     priority: Option<PxPrio_t>,
@@ -433,7 +433,7 @@ impl TaskCreationConfigOverrides {
 // production-ready state). Using function pointers sidesteps the limitation and allows us to define a task creation
 // configuration that, at runtime, can then use the provided functions to create a task specification.
 #[derive(Debug, Copy, Clone)]
-pub struct TaskNativeCreationConfig {
+struct TaskNativeCreationConfig {
     core: fn() -> PxUInt_t,
     object_pool: fn() -> PxOpool_t,
     priority: fn() -> PxPrio_t,
@@ -477,29 +477,16 @@ pub struct TaskCreationConfig {
 }
 
 impl TaskCreationConfig {
-    /// Creates a new [`TaskCreationConfig`] from the provided identifier, configuration and overrides.
-    pub const fn new(
-        task_creation_identifier: &'static str,
-        task_spawn_config: TaskNativeCreationConfig,
-        overrides: TaskCreationConfigOverrides,
-    ) -> Self {
-        Self {
-            task_creation_identifier,
-            task_config: task_spawn_config,
-            overrides,
-        }
-    }
-
     /// Creates a new [`TaskNativeCreationConfig`] derived from generic type parameter `PT`.
     pub const fn from_task<PT>(task_creation_identifier: &'static str) -> Self
     where
         PT: PxrosTask,
     {
-        Self::new(
+        Self {
             task_creation_identifier,
-            TaskNativeCreationConfig::from_task::<PT>(),
-            TaskCreationConfigOverrides::const_default(),
-        )
+            task_config: TaskNativeCreationConfig::from_task::<PT>(),
+            overrides: TaskCreationConfigOverrides::const_default(),
+        }
     }
 
     /// Creates a new task from the configuration and overrides.

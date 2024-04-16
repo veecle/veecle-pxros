@@ -6,7 +6,7 @@ use core::time::Duration;
 
 use pxros::bindings::*;
 use pxros::PxResult;
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::{log_id, PxrosTask};
 use veecle_pxros::pxros::time::time_since_boot;
 
 // Currently not present in the linker script anymore.
@@ -32,8 +32,7 @@ impl PxrosTask for HiddenTask {
 
     /// We can make this a bit more sophisticated
     fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
-        let mut start = time_since_boot();
+        let (task_debug_name, current_task_id) = log_id::<Self>();        let mut start = time_since_boot();
 
         if start > Duration::from_millis(100) {
             panic!("[{}: {}] You need to get me going asap!", task_debug_name, current_task_id);

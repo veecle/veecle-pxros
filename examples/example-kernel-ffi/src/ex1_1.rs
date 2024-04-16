@@ -1,5 +1,5 @@
 //! Exercise 1.1
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::log_id;
 
 use crate::Ex1Task;
 
@@ -14,7 +14,7 @@ impl Ex1Task {
     /// The function should call (via `unsafe`) the FFI and print
     /// the returned flag via the [defmt] framework.
     pub fn ex1_1_solution() {
-        let (task_debug_name, task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, task_id) = log_id::<Self>();
 
         let flag = unsafe { secret_flag() };
 

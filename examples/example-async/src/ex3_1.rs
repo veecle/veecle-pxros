@@ -4,7 +4,7 @@ use core::time::Duration;
 use futures::StreamExt;
 use pxros::bindings::*;
 use pxros::PxResult;
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::log_id;
 use veecle_pxros::pxros::ticker::AsyncTicker;
 use veecle_pxros::pxros_run;
 
@@ -39,7 +39,7 @@ impl AsyncExecutorTask {
     where
         F: Fn() -> Option<&'static str>,
     {
-        let (task_debug_name, log_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, log_task_id) = log_id::<Self>();
         while (ticker.next().await).is_some() {
             if let Some(flag) = callback() {
                 defmt::info!("[{}: {}] The (3.1) flag is: {}", task_debug_name, log_task_id, flag);

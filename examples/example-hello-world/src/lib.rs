@@ -18,7 +18,7 @@ use pxros::PxResult;
 use veecle_pxros::pxros::events::{Receiver, Signaller};
 use veecle_pxros::pxros::messages::MailSender;
 use veecle_pxros::pxros::name_server::TaskName;
-use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
+use veecle_pxros::pxros::task::{log_id, PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
 use veecle_pxros::pxros::ticker::{AsyncTicker, Ticker};
 use veecle_pxros::pxros_run;
 
@@ -88,8 +88,7 @@ impl PxrosTask for TaskA {
     }
 
     fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
-        // Fetch the server ID or panic if not found
+        let (task_debug_name, current_task_id) = log_id::<Self>(); // Fetch the server ID or panic if not found
         let server = SERVER_TASK.query(TaskAEvents::Ticker);
 
         // Get a signaller for LED0
@@ -120,8 +119,7 @@ impl PxrosTask for TaskB {
     }
 
     fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
-        // Fetch the names or panic if not found
+        let (task_debug_name, current_task_id) = log_id::<Self>(); // Fetch the names or panic if not found
         let server = SERVER_TASK.query(TaskBEvents::Ticker);
         let executor = ASYNC_EXECUTOR.query(TaskBEvents::Ticker);
 
@@ -163,7 +161,7 @@ impl PxrosTask for AsyncExecutorTask {
     }
 
     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         defmt::info!("[{}: {}] Starting async executor.", task_debug_name, current_task_id);
         // // Prepare a ticker here to show that parameter passing works
         let ticker = AsyncTicker::every(AsyncEvent::Ticker, Duration::from_millis(1_500))?;
@@ -226,8 +224,7 @@ impl PxrosTask for TaskServer {
     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
         use BOARD_LED_t::*;
 
-        let (task_debug_name, current_task_id) = Self::log_id();
-
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         // Register the name to the name server. Will panic on error.
         SERVER_TASK.register(PxGetId());
 

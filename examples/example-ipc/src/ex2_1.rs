@@ -4,7 +4,7 @@ use core::time::Duration;
 
 use pxros::bindings::PxMbx_t;
 use pxros::PxResult;
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::{log_id, PxrosTask};
 use veecle_pxros::pxros::ticker::Ticker;
 
 use crate::MyEvents;
@@ -38,7 +38,7 @@ impl PxrosTask for Ex2_1Task {
     }
 
     fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         defmt::debug!("[{}: {}] Task started.", task_debug_name, current_task_id);
 
         // Create a ticker using my task events

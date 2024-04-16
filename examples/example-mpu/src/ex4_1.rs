@@ -4,7 +4,7 @@ use core::ffi::CStr;
 use pxros::bindings::{PxMbx_t, PxPrio_t, PxProtectType_t};
 use pxros::mem::MemoryRegion;
 use pxros::PxResult;
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::{log_id, PxrosTask};
 
 fn flag_4_1() -> &'static str {
     const DATA_ADDRESS: usize = 0xB002FC00;
@@ -53,7 +53,7 @@ impl PxrosTask for Task1 {
     }
 
     fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         defmt::info!(
             "[{}: {}] Hi, I am going to read the flag by accessing the memory. If I get an MPU trap I will simply die",
             task_debug_name,

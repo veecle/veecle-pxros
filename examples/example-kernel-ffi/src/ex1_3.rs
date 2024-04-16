@@ -1,6 +1,6 @@
 //! Exercise 1.3
 use pxros::bindings::{PxGetId, PxTask_t};
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::log_id;
 
 use crate::Ex1Task;
 
@@ -19,7 +19,7 @@ impl Ex1Task {
     /// In real scenarios, direct usage of bindings is not advised.
     /// FFIs won't guarantee lifetime or memory ownership.
     pub fn ex1_3_solution() {
-        let (task_debug_name, log_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, log_task_id) = log_id::<Self>();
 
         // Perform a system call
         let task_id = PxGetId();

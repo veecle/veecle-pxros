@@ -52,7 +52,7 @@
 //! impl PxrosTask for Task {
 //!     //! / User executor code.
 //!     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
-//!         let (task_debug_name, log_task_id) = <Self as PxrosTask>::log_id();
+//!         let (task_debug_name, log_task_id) = log_id::<Self>();
 //!         defmt::panic!("[{}: {}] Example task terminated!", task_debug_name, log_task_id)
 //!     }
 //! }

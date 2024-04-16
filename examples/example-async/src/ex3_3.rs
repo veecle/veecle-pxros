@@ -6,7 +6,7 @@ use pxros::PxResult;
 use veecle_pxros::pxros::events::{AsyncEventReceiver, Signaller};
 use veecle_pxros::pxros::messages::AsyncMessageReceiver;
 use veecle_pxros::pxros::name_server::NameServer;
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::log_id;
 use veecle_pxros::pxros_run;
 
 use crate::{AsyncExecutorTask, FlagEvents, TickerEvents};
@@ -24,7 +24,7 @@ impl AsyncExecutorTask {
         mut flagger: AsyncMessageReceiver,
         mut termination: AsyncEventReceiver<FlagEvents>,
     ) -> PxResult<()> {
-        let (task_debug_name, log_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, log_task_id) = log_id::<Self>();
 
         let mut flag = heapless::Vec::<u8, 16>::new();
 

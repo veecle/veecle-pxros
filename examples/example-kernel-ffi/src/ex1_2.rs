@@ -1,5 +1,5 @@
 //! Exercise 1.2
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::log_id;
 
 use crate::Ex1Task;
 
@@ -18,7 +18,7 @@ impl Ex1Task {
     ///
     /// For formatting rules see [defmt].
     pub fn ex1_2_solution() {
-        let (task_debug_name, task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, task_id) = log_id::<Self>();
 
         let partial_flag = unsafe { partial_secret_flag() };
         let flag_suffix = unsafe { partial_flag_suffix() };

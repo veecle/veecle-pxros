@@ -51,7 +51,7 @@ use super::name_server::TaskName;
 ///     }
 ///
 ///     fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
-///         let (task_debug_name, task_id) = <Self as PxrosTask>::log_id();
+///         let (task_debug_name, task_id) = log_id::<Self>();
 ///
 ///         defmt::info!("[{}: {}] Hello!", task_debug_name, task_id,);
 ///         Ok(())
@@ -254,15 +254,6 @@ pub trait PxrosTask {
         PxTicks_t(0)
     }
 
-    /// Returns the task's debug name and ID for logging purposes.
-    fn log_id<'a>() -> (&'a str, u16) {
-        let task_debug_name = Self::debug_name()
-            .to_str()
-            .expect("Task debug name should be valid UTF-8.");
-        let current_task_id = PxGetId().id();
-        (task_debug_name, current_task_id)
-    }
-
     /// The task entry function.
     ///
     /// This function is called by PXROS when the task is started.
@@ -273,7 +264,7 @@ pub trait PxrosTask {
     ///
     /// Defaults to registering the [`Self::task_name`] before executing [`Self::task_main`].
     extern "C" fn entry_function(task: PxTask_t, mailbox: PxMbx_t, _activation_events: PxEvents_t) {
-        let (task_debug_name, current_task_id) = Self::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         defmt::debug!("[{}: {}] Starting execution.", task_debug_name, current_task_id);
 
         if let Some(task_name) = Self::task_name() {
@@ -301,7 +292,7 @@ pub trait PxrosTask {
     ///
     /// Defaults to using [`Self`] trait functions to fill [`PxTaskSpec_T`].
     extern "C" fn generate_specification() -> PxTaskSpec_T {
-        let (task_debug_name, current_task_id) = Self::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         defmt::debug!("[{}] Generating task specification for: {}", current_task_id, task_debug_name);
 
         PxTaskSpec_T {
@@ -362,7 +353,7 @@ pub trait PxrosTask {
             } else {
                 ""
             };
-            let (trait_task_debug_name, current_task_id) = Self::log_id();
+            let (trait_task_debug_name, current_task_id) = log_id::<Self>();
 
             defmt::debug!(
                 "[{}] Creating task using \"{}\" create function for task spec \"{}\".",
@@ -391,6 +382,18 @@ pub trait PxrosTask {
             result
         }
     }
+}
+
+/// Returns the task's debug name and ID for logging purposes.
+pub fn log_id<'a, PT>() -> (&'a str, u16)
+where
+    PT: PxrosTask + ?Sized,
+{
+    let task_debug_name = PT::debug_name()
+        .to_str()
+        .expect("Task debug name should be valid UTF-8.");
+    let current_task_id = PxGetId().id();
+    (task_debug_name, current_task_id)
 }
 
 /// Task creation configuration used to override aspects of the [`TaskNativeCreationConfig`] in [`TaskCreationConfig`].

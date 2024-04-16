@@ -6,14 +6,14 @@ use pxros::bindings::PxError_t;
 use pxros::PxResult;
 use veecle_pxros::pxros::events::{AsyncEventReceiver, Event};
 use veecle_pxros::pxros::messages::AsyncMessageReceiver;
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::log_id;
 use veecle_pxros::pxros::ticker::AsyncTicker;
 
 use crate::{AsyncEvent, AsyncExecutorTask};
 
 impl AsyncExecutorTask {
     pub async fn async_task_yield_1() -> PxResult<i64> {
-        let (task_debug_name, current_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         for i in 0..10 {
             defmt::info!("[{}: {}] Async task A -> {:?}", task_debug_name, current_task_id, i);
             Self::yield_once().await;
@@ -22,7 +22,7 @@ impl AsyncExecutorTask {
     }
 
     pub async fn async_task_yield_2() -> PxResult<i64> {
-        let (task_debug_name, current_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         for i in 0..10 {
             defmt::info!("[{}: {}] Async task C -> {:?}", task_debug_name, current_task_id, i);
             Self::yield_once().await;
@@ -32,7 +32,7 @@ impl AsyncExecutorTask {
     }
 
     pub async fn async_task_on_event() -> PxResult<i64> {
-        let (task_debug_name, current_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         // Example of event stream
         let mut recv = AsyncEventReceiver::new(AsyncEvent::SERVER).enumerate();
 
@@ -49,7 +49,7 @@ impl AsyncExecutorTask {
     }
 
     pub async fn async_task_on_ticker<E: Event + Unpin>(ticker: AsyncTicker<E>) -> PxResult<i64> {
-        let (task_debug_name, current_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
 
         // Example of ticker stream
         let mut ticker = ticker.enumerate().take(5);
@@ -62,7 +62,7 @@ impl AsyncExecutorTask {
     }
 
     pub async fn async_task_on_message() -> PxResult<i64> {
-        let (task_debug_name, current_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         // Example of message stream
         let mut recv = AsyncMessageReceiver::new();
 

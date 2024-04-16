@@ -37,7 +37,7 @@ use core::ffi::CStr;
 use pxros::bindings::PxMbx_t;
 use pxros::PxResult;
 use veecle_pxros::pxros::name_server::TaskName;
-use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
+use veecle_pxros::pxros::task::{log_id, PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
 
 use crate::backend::FlagMessageTask;
 
@@ -106,7 +106,7 @@ impl PxrosTask for AsyncExecutorTask {
 
     /// User executor code.
     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, log_task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, log_task_id) = log_id::<Self>();
 
         // Solution for (3.1)
         Self::ex3_1_solution(mailbox);

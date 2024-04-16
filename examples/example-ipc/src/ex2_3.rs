@@ -6,7 +6,7 @@ use pxros::bindings::PxMbx_t;
 use pxros::PxResult;
 use veecle_pxros::pxros::events::Receiver;
 use veecle_pxros::pxros::name_server::TaskName;
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::{log_id, PxrosTask};
 
 use crate::{FlagEvents, RECEIVE_TASK_NAME};
 
@@ -42,8 +42,7 @@ impl PxrosTask for Ex2_3Task {
     }
 
     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
-        // Create a receiver able to receive messages & events
+        let (task_debug_name, current_task_id) = log_id::<Self>(); // Create a receiver able to receive messages & events
         let mut receiver = Receiver::new(mailbox, FlagEvents::all());
 
         // Naive loop that process messages as they come

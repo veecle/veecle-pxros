@@ -25,7 +25,7 @@ use core::ffi::CStr;
 
 use pxros::bindings::PxMbx_t;
 use pxros::PxResult;
-use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig};
+use veecle_pxros::pxros::task::{log_id, PxrosTask, TaskCreationConfig};
 
 mod backend;
 mod ex1_1;
@@ -46,7 +46,7 @@ impl PxrosTask for Ex1Task {
     }
 
     fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, task_id) = <Self as PxrosTask>::log_id();
+        let (task_debug_name, task_id) = log_id::<Self>();
 
         // Solution for (1.1)
         Self::ex1_1_solution();

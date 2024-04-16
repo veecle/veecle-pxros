@@ -7,7 +7,7 @@ use pxros::PxResult;
 use veecle_pxros::pxros::events::Receiver;
 use veecle_pxros::pxros::messages::MailSender;
 use veecle_pxros::pxros::name_server::{NameServer, TaskName};
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::{log_id, PxrosTask};
 use veecle_pxros::pxros::ticker::Ticker;
 
 use crate::{FlagEvents, MyEvents, SALT_TASK_NAME};
@@ -37,8 +37,7 @@ impl PxrosTask for Ex2_4Task {
     }
 
     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
-
+        let (task_debug_name, current_task_id) = log_id::<Self>();
         let flag_task = NameServer::query(&crate::VALIDATION_TASK_NAME, MyEvents::TickerEx4).unwrap();
 
         // Create a sender and register

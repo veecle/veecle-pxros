@@ -25,7 +25,7 @@ fn customer_app(mailbox: PxMbx_t) -> PxResult<()> {
     let tx_mailbox = Service::Network.wait_for_service(PXCORE_1, AppEvents::Ticker)?;
 
     // Register the socket.
-    let mut udp = UdpMailbox::register(mailbox);
+    let mut udp = UdpMailbox::register(mailbox, tx_mailbox);
 
     defmt::info!("Entering main application loop");
     loop {
@@ -38,6 +38,12 @@ fn customer_app(mailbox: PxMbx_t) -> PxResult<()> {
         // Obtain the endpoint and payload.
         let payload = received_udp_message.payload();
         let endpoint = received_udp_message.endpoint();
+
+        defmt::info!(
+            "Received \"{}\" from {}, returning packet.",
+            core::str::from_utf8(payload).unwrap().strip_suffix('\n').unwrap(),
+            endpoint
+        );
 
         // Echo payload to sender.
         let message = UdpMessage::new(endpoint, payload);

@@ -59,6 +59,13 @@ use super::name_server::TaskName;
 /// }
 /// ```
 pub trait PxrosTask {
+    /// The main function of the task.
+    // We cannot call this function `main` and use it in doctest.
+    // The examples add a main function for tests, but will not do this if a main() function is present.
+    // Since this only seems to check functions names, this does not seem to take traits into accounts.
+    // https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#pre-processing-examples
+    fn task_main(_mailbox: PxMbx_t) -> PxResult<()>;
+
     /// Returns the [`TaskName`] to register for this task. If none is returned, the task will not be registered.
     ///
     /// Override this function to change the task name.
@@ -254,21 +261,6 @@ pub trait PxrosTask {
             .expect("Task debug name should be valid UTF-8.");
         let current_task_id = PxGetId().id();
         (task_debug_name, current_task_id)
-    }
-
-    /// The main function of the task.
-    ///
-    /// Override this function to customize the task's behavior.
-    ///
-    /// Defaults to instantly panicking.
-    // We cannot call this function `main` and use it in doctest.
-    // The examples add a main function for tests, but will not do this if a main() function is present.
-    // Since this only seems to check functions names, this does not seem to take traits into accounts.
-    // https://doc.rust-lang.org/rustdoc/write-documentation/documentation-tests.html#pre-processing-examples
-    fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = Self::log_id();
-
-        defmt::panic!("[{}: {}] Task default main function!", task_debug_name, current_task_id);
     }
 
     /// The task entry function.

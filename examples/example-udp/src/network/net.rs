@@ -15,6 +15,7 @@ use smoltcp::socket::udp::{self, PacketMetadata, RecvError};
 use smoltcp::storage::PacketBuffer;
 use smoltcp::time::Instant;
 use smoltcp::wire::{HardwareAddress, IpCidr, IpEndpoint};
+use veecle_pxros::pxros::name_server::NameServer;
 use veecle_pxros::pxros::ticker::Ticker;
 use veecle_pxros::pxros::time::time_since_boot;
 
@@ -22,6 +23,7 @@ use super::udp::UdpMailbox;
 use super::{NetworkEvents, PxDevice};
 use crate::config::{ETH_ADDRESS, MY_IP, MY_PORT, UDP_MTU};
 use crate::network::udp::UdpMessage;
+use crate::CUSTOMER_APP_TASK_NAME;
 
 /// Runs the network stack, forever.
 ///
@@ -65,7 +67,7 @@ pub fn run_network_stack(mut device: PxDevice, mut udp_server: UdpMailbox) -> ! 
 
     // We support a single connected task and we do not check
     // if it is valid.
-    let mut task_connected = None;
+    let task_connected = NameServer::query(&CUSTOMER_APP_TASK_NAME, NetworkEvents::Ticker).unwrap();
 
     // TODO
     // Create a ticker that trigger a network event every 100ms...
@@ -83,20 +85,16 @@ pub fn run_network_stack(mut device: PxDevice, mut udp_server: UdpMailbox) -> ! 
         let udp = sockets.get_mut::<udp::Socket>(handle);
         match udp.recv() {
             Ok((bytes, endpoint)) => {
-                if let Some(task) = task_connected {
-                    defmt::debug!(
-                        "Delivering RX-UDP packet from {:?} - {:?} bytes long to task {:?}.",
-                        endpoint,
-                        bytes.len(),
-                        task
-                    );
+                defmt::debug!(
+                    "Delivering RX-UDP packet from {:?} - {:?} bytes long to task {:?}.",
+                    endpoint,
+                    bytes.len(),
+                    task_connected
+                );
 
-                    let message = UdpMessage::new(endpoint.endpoint, bytes);
-                    if let Err(error) = udp_server.send_to(message, task) {
-                        defmt::warn!("Could not send message to mailbox of {:?} - error: {:?}", task, error);
-                    }
-                } else {
-                    defmt::warn!("Discarding RX-UDP packet from {:?} - {:?} bytes long.", endpoint, bytes.len());
+                let message = UdpMessage::new(endpoint.endpoint, bytes);
+                if let Err(error) = udp_server.send_to(message, task_connected) {
+                    defmt::warn!("Could not send message to mailbox of {:?} - error: {:?}", task_connected, error);
                 }
             },
             Err(RecvError::Exhausted) => {
@@ -121,16 +119,11 @@ pub fn run_network_stack(mut device: PxDevice, mut udp_server: UdpMailbox) -> ! 
             },
             Ok(Some(mut message)) => {
                 let bytes = message.data().expect("Failed to get message data");
-                let sender = message.sender().expect("Failed to get message sender");
 
                 // Decode the UdpMessage and extract payload + endpoint
                 let udp_message = UdpMessage::from_bytes(bytes);
                 let payload = udp_message.payload();
                 let endpoint = udp_message.endpoint();
-
-                // Store the latest sender as the "connected" client. This is not proper but will do
-                // the job for now.
-                task_connected = Some(sender);
 
                 match udp.send(payload.len(), endpoint) {
                     Ok(bytes) => {

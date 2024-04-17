@@ -82,12 +82,8 @@ impl UdpMailbox {
     }
 
     /// Register a mailbox.
-    ///
-    /// Demo purposes only.
-    pub fn register(rx_mailbox: PxMbx_t, tx_mailbox: PxMbx_t) -> Self {
-        let mut udp = UdpMailbox::init(rx_mailbox);
-        let _ = udp.send(UdpMessage::new(IpEndpoint::new(Ipv4Address([127, 0, 0, 1]).into(), 0), &[]), tx_mailbox);
-        udp
+    pub fn register(rx_mailbox: PxMbx_t) -> Self {
+        UdpMailbox::init(rx_mailbox)
     }
 
     /// Sends UDP bytes to the task's private mailbox.

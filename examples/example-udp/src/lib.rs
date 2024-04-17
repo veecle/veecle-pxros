@@ -7,6 +7,7 @@ use core::time::Duration;
 use pxros::bindings::*;
 use pxros::PxResult;
 use veecle_pxros::pxros::events::Event;
+use veecle_pxros::pxros::name_server::TaskName;
 use veecle_pxros::pxros::task::TaskCreationConfig;
 use veecle_pxros::pxros::ticker::Ticker;
 
@@ -17,6 +18,9 @@ mod app;
 mod config;
 mod hardcoded_bindings;
 mod network;
+
+/// Task's name for exercise 2.4
+const CUSTOMER_APP_TASK_NAME: TaskName = TaskName::new(5);
 
 /// Definition and configuration of auto-created tasks.
 #[no_mangle]

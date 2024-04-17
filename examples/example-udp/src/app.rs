@@ -7,7 +7,7 @@ use veecle_pxros::pxros::name_server::TaskName;
 use veecle_pxros::pxros::task::PxrosTask;
 
 use crate::network::udp::{UdpMailbox, UdpMessage};
-use crate::Service;
+use crate::{Service, CUSTOMER_APP_TASK_NAME};
 
 bitflags::bitflags! {
     /// Events used by the application
@@ -23,7 +23,6 @@ bitflags::bitflags! {
 /// basic gateway functionalities by forwarding packets between parties.
 ///
 /// No special permission or resource is required.
-
 pub(crate) struct CustomerApp;
 
 impl PxrosTask for CustomerApp {
@@ -32,7 +31,7 @@ impl PxrosTask for CustomerApp {
         let tx_mailbox = Service::Network.wait_for_service(PXCORE_1, AppEvents::Ticker)?;
 
         // Register the socket.
-        let mut udp = UdpMailbox::register(mailbox, tx_mailbox);
+        let mut udp = UdpMailbox::register(mailbox);
 
         defmt::info!("Entering main application loop");
         loop {
@@ -62,7 +61,7 @@ impl PxrosTask for CustomerApp {
     }
 
     fn task_name() -> Option<TaskName> {
-        Some(TaskName::new(5))
+        Some(CUSTOMER_APP_TASK_NAME)
     }
 
     fn debug_name() -> &'static CStr {

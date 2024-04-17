@@ -39,7 +39,7 @@
 //! ```
 //! # use pxros::bindings::PxMbx_t;
 //! # use pxros::PxResult;
-//! # use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
+//! # use veecle_pxros::pxros::task::{log_id, PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
 //!
 //! /// Definition and configuration of auto-created tasks.
 //! #[no_mangle]

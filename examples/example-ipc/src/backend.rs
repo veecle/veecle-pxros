@@ -55,7 +55,8 @@ impl PxrosTask for ValidationTask {
     }
 
     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
-        let (task_debug_name, current_task_id) = log_id::<Self>();        defmt::info!("[{}: {}] Started and waiting for signals", task_debug_name, current_task_id);
+        let (task_debug_name, current_task_id) = log_id::<Self>();
+        defmt::info!("[{}: {}] Started and waiting for signals", task_debug_name, current_task_id);
 
         // We receive anything :)
         let mut receiver = Receiver::new(mailbox, FlagEvents::all());

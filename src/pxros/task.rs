@@ -1,7 +1,6 @@
 //! Utilities to simplify the creation and execution of tasks.
 
 use core::ffi::CStr;
-use core::marker::PhantomData;
 
 use pxros::bindings::*;
 use pxros::mem::{MemoryRegion, Privileges, StackSpec};
@@ -522,57 +521,15 @@ impl TaskCreationConfig {
     }
 }
 
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct NoCoreMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct OverridesCoreMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct NoObjectPoolMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct OverridesObjectPoolMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct NoPriorityMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct OverridesPriorityMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct NoActivationEventsMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct OverridesActivationEventsMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct NoTaskCreationFunctionMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct OverridesTaskCreationFunctionMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct NoSpecificationFunctionMarker;
-/// Marker type for [`TaskCreationConfigBuilder`].
-pub struct OverridesSpecificationFunctionMarker;
-
 /// Builder for [`TaskCreationConfig`].
 ///
 /// Allows overriding the task creation configuration defined in a [`PxrosTask`] to customize the creation behavior.
-pub struct TaskCreationConfigBuilder<
-    Core,
-    ObjectPool,
-    Priority,
-    ActivationEvents,
-    TaskCreationFunction,
-    SpecificationFunction,
-> {
+pub struct TaskCreationConfigBuilder {
     task_config: TaskNativeCreationConfig,
     overrides: TaskCreationConfigOverrides,
-    marker: PhantomData<(Core, ObjectPool, Priority, ActivationEvents, TaskCreationFunction, SpecificationFunction)>,
 }
 
-impl
-    TaskCreationConfigBuilder<
-        NoCoreMarker,
-        NoObjectPoolMarker,
-        NoPriorityMarker,
-        NoActivationEventsMarker,
-        NoTaskCreationFunctionMarker,
-        NoSpecificationFunctionMarker,
-    >
-{
+impl TaskCreationConfigBuilder {
     /// Creates a new [`TaskCreationConfigBuilder`] from generic type parameter `PT`.
     pub const fn from_task<PT>() -> Self
     where
@@ -581,212 +538,105 @@ impl
         Self {
             task_config: TaskNativeCreationConfig::from_task::<PT>(),
             overrides: TaskCreationConfigOverrides::const_default(),
-            marker: PhantomData,
         }
     }
-}
 
-impl<ObjectPool, Priority, ActivationEvents, TaskCreationFunction, SpecificationFunction>
-    TaskCreationConfigBuilder<
-        NoCoreMarker,
-        ObjectPool,
-        Priority,
-        ActivationEvents,
-        TaskCreationFunction,
-        SpecificationFunction,
-    >
-{
     /// Overrides the core configuration.
-    pub const fn override_core(
-        self,
-        core: u32,
-    ) -> TaskCreationConfigBuilder<
-        OverridesCoreMarker,
-        ObjectPool,
-        Priority,
-        ActivationEvents,
-        TaskCreationFunction,
-        SpecificationFunction,
-    > {
+    pub const fn override_core(self, core: u32) -> Self {
+        if self.overrides.core.is_some() {
+            panic!("Core already overwritten.")
+        }
+
         TaskCreationConfigBuilder {
             task_config: self.task_config,
             overrides: TaskCreationConfigOverrides {
                 core: Some(core),
                 ..self.overrides
             },
-            marker: PhantomData,
         }
     }
-}
 
-impl<Core, Priority, ActivationEvents, TaskCreationFunction, SpecificationFunction>
-    TaskCreationConfigBuilder<
-        Core,
-        NoObjectPoolMarker,
-        Priority,
-        ActivationEvents,
-        TaskCreationFunction,
-        SpecificationFunction,
-    >
-{
     /// Overrides the object pool configuration.
-    pub const fn override_object_pool(
-        self,
-        object_pool: PxOpool_t,
-    ) -> TaskCreationConfigBuilder<
-        Core,
-        OverridesObjectPoolMarker,
-        Priority,
-        ActivationEvents,
-        TaskCreationFunction,
-        SpecificationFunction,
-    > {
+    pub const fn override_object_pool(self, object_pool: PxOpool_t) -> Self {
+        if self.overrides.object_pool.is_some() {
+            panic!("Object pool already overwritten.")
+        }
+
         TaskCreationConfigBuilder {
             task_config: self.task_config,
             overrides: TaskCreationConfigOverrides {
                 object_pool: Some(object_pool),
                 ..self.overrides
             },
-            marker: PhantomData,
         }
     }
-}
 
-impl<Core, ObjectPool, ActivationEvents, TaskCreationFunction, SpecificationFunction>
-    TaskCreationConfigBuilder<
-        Core,
-        ObjectPool,
-        NoPriorityMarker,
-        ActivationEvents,
-        TaskCreationFunction,
-        SpecificationFunction,
-    >
-{
     /// Overrides the priority configuration.
-    pub const fn override_priority(
-        self,
-        priority: u32,
-    ) -> TaskCreationConfigBuilder<
-        Core,
-        ObjectPool,
-        OverridesPriorityMarker,
-        ActivationEvents,
-        TaskCreationFunction,
-        SpecificationFunction,
-    > {
+    pub const fn override_priority(self, priority: u32) -> Self {
+        if self.overrides.priority.is_some() {
+            panic!("Priority already overwritten.")
+        }
+
         TaskCreationConfigBuilder {
             task_config: self.task_config,
             overrides: TaskCreationConfigOverrides {
                 priority: Some(PxPrio_t(priority)),
                 ..self.overrides
             },
-            marker: PhantomData,
         }
     }
-}
 
-impl<Core, ObjectPool, Priority, TaskCreationFunction, SpecificationFunction>
-    TaskCreationConfigBuilder<
-        Core,
-        ObjectPool,
-        Priority,
-        NoActivationEventsMarker,
-        TaskCreationFunction,
-        SpecificationFunction,
-    >
-{
     /// Overrides the activation event configuration.
-    pub const fn override_activation_events(
-        self,
-        activation_events: u32,
-    ) -> TaskCreationConfigBuilder<
-        Core,
-        ObjectPool,
-        Priority,
-        OverridesActivationEventsMarker,
-        TaskCreationFunction,
-        SpecificationFunction,
-    > {
+    pub const fn override_activation_events(self, activation_events: u32) -> Self {
+        if self.overrides.activation_events.is_some() {
+            panic!("Activation events already overwritten.")
+        }
+
         TaskCreationConfigBuilder {
             task_config: self.task_config,
             overrides: TaskCreationConfigOverrides {
                 activation_events: Some(PxEvents_t(activation_events)),
                 ..self.overrides
             },
-            marker: PhantomData,
         }
     }
-}
 
-impl<Core, ObjectPool, Priority, ActivationEvents, SpecificationFunction>
-    TaskCreationConfigBuilder<
-        Core,
-        ObjectPool,
-        Priority,
-        ActivationEvents,
-        NoTaskCreationFunctionMarker,
-        SpecificationFunction,
-    >
-{
     /// Overrides the creation function configuration.
     pub const fn override_creation_function(
         self,
         creation_function: extern "C" fn(PxOpool_t, PxPrio_t, PxEvents_t, extern "C" fn() -> PxTaskSpec_T) -> PxTask_t,
-    ) -> TaskCreationConfigBuilder<
-        Core,
-        ObjectPool,
-        Priority,
-        ActivationEvents,
-        OverridesTaskCreationFunctionMarker,
-        SpecificationFunction,
-    > {
+    ) -> Self {
+        if self.overrides.task_creation_function.is_some() {
+            panic!("Creation function already overwritten.")
+        }
+
         TaskCreationConfigBuilder {
             task_config: self.task_config,
             overrides: TaskCreationConfigOverrides {
                 task_creation_function: Some(creation_function),
                 ..self.overrides
             },
-            marker: PhantomData,
         }
     }
-}
 
-impl<Core, ObjectPool, Priority, ActivationEvents, TaskCreationFunction>
-    TaskCreationConfigBuilder<
-        Core,
-        ObjectPool,
-        Priority,
-        ActivationEvents,
-        TaskCreationFunction,
-        NoSpecificationFunctionMarker,
-    >
-{
     /// Overrides the specification function configuration.
     pub const fn override_specification_function(
         self,
         specification_function: extern "C" fn() -> PxTaskSpec_T,
-    ) -> TaskCreationConfigBuilder<
-        Core,
-        ObjectPool,
-        Priority,
-        ActivationEvents,
-        TaskCreationFunction,
-        OverridesSpecificationFunctionMarker,
-    > {
+    ) -> Self {
+        if self.overrides.specification_function.is_some() {
+            panic!("Specification function already overwritten.")
+        }
+
         TaskCreationConfigBuilder {
             task_config: self.task_config,
             overrides: TaskCreationConfigOverrides {
                 specification_function: Some(specification_function),
                 ..self.overrides
             },
-            marker: PhantomData,
         }
     }
-}
 
-impl<Core, ObjectPool, Priority, ActivationEvents, TaskCreationFunction, SpecificationFunction>
-    TaskCreationConfigBuilder<Core, ObjectPool, Priority, ActivationEvents, TaskCreationFunction, SpecificationFunction>
-{
     /// Builds [`TaskCreationConfig`] with configured overrides.
     pub const fn build(self, task_creation_identifier: &'static str) -> TaskCreationConfig {
         TaskCreationConfig {

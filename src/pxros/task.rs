@@ -34,7 +34,7 @@ use super::name_server::TaskName;
 /// # use std::ffi::CStr;
 /// # use pxros::bindings::PxMbx_t;
 /// # use pxros::PxResult;
-/// # use veecle_pxros::pxros::task::{PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
+/// # use veecle_pxros::pxros::task::{log_id, PxrosTask, TaskCreationConfig, TaskCreationConfigBuilder};
 /// // The TASK_LIST static is required to defined exactly once per PXROS application.
 /// #[no_mangle]
 /// static TASK_LIST: &[TaskCreationConfig] = &[

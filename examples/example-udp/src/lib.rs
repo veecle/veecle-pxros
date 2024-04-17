@@ -7,12 +7,23 @@ use core::time::Duration;
 use pxros::bindings::*;
 use pxros::PxResult;
 use veecle_pxros::pxros::events::Event;
+use veecle_pxros::pxros::task::TaskCreationConfig;
 use veecle_pxros::pxros::ticker::Ticker;
+
+use crate::app::CustomerApp;
+use crate::network::TcpIpTask;
 
 mod app;
 mod config;
 mod hardcoded_bindings;
 mod network;
+
+/// Definition and configuration of auto-created tasks.
+#[no_mangle]
+pub static TASK_LIST: &[TaskCreationConfig] = &[
+    TaskCreationConfig::from_task::<CustomerApp>("CustomerAppTaskCreation"),
+    TaskCreationConfig::from_task::<TcpIpTask>("TcpIpTaskCreation"),
+];
 
 /// Small semantic wrapper for declaring global PXROS services.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, defmt::Format)]

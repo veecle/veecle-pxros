@@ -45,16 +45,16 @@ use super::name_server::TaskName;
 ///
 /// struct Task;
 /// impl PxrosTask for Task {
-///     fn debug_name() -> &'static CStr {
-///         CStr::from_bytes_with_nul("TaskDebugName\0".as_bytes())
-///             .expect("The debug name should be a valid, zero-terminated C string.")
-///     }
-///
 ///     fn task_main(_mailbox: PxMbx_t) -> PxResult<()> {
 ///         let (task_debug_name, task_id) = log_id::<Self>();
 ///
 ///         defmt::info!("[{}: {}] Hello!", task_debug_name, task_id,);
 ///         Ok(())
+///     }
+///
+///     fn debug_name() -> &'static CStr {
+///         CStr::from_bytes_with_nul("TaskDebugName\0".as_bytes())
+///             .expect("The debug name should be a valid, zero-terminated C string.")
 ///     }
 /// }
 /// ```

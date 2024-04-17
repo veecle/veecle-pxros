@@ -444,7 +444,7 @@ struct TaskNativeCreationConfig {
 
 impl TaskNativeCreationConfig {
     /// Creates a new [`TaskNativeCreationConfig`] populated by generic type parameter `PT`'s associated functions.
-    pub const fn from_task<PT>() -> Self
+    const fn from_task<PT>() -> Self
     where
         PT: PxrosTask,
     {

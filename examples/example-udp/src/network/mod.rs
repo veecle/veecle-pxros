@@ -39,9 +39,9 @@ extern "C" fn mbx_handler(arg1: PxMsg_t, _: PxMsgType_t, arg3: PxArg_t) -> PxMsg
 /// This tasks runs an instance of the network stack. It requires exclusive access to the following global mailboxes:
 /// * [PxMbxReq_t::_PxSrv1_ReqMbxId]: this is used to communicate with the Ethernet "C" driver.
 /// * [PxMbxReq_t::_PxSrv2_ReqMbxId]: this is used by other tasks to send UDP packets (temporary and ugly solution).
-pub(crate) struct TcpIpTask;
+pub(crate) struct NetworkStackTask;
 
-impl PxrosTask for TcpIpTask {
+impl PxrosTask for NetworkStackTask {
     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
         // Wait for the Ethernet driver service task on PXCORE_0 to get initialized. Synchronization point.
         let tx_mailbox = Service::Ethernet

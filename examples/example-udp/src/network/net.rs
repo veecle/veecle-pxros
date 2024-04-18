@@ -21,9 +21,9 @@ use veecle_pxros::pxros::time::time_since_boot;
 
 use super::udp::UdpMailbox;
 use super::{NetworkEvents, PxDevice};
-use crate::config::{ETH_ADDRESS, MY_IP, MY_PORT, UDP_MTU};
+use crate::config::{IP_ADDRESS, MAC_ADDRESS, PORT, UDP_MTU};
 use crate::network::udp::UdpMessage;
-use crate::CUSTOMER_APP_TASK_NAME;
+use crate::UDP_MIRROR_TASK_NAME;
 
 /// Runs the network stack, forever.
 ///
@@ -43,14 +43,14 @@ pub fn run_network_stack(mut device: PxDevice, mut udp_server: UdpMailbox) -> ! 
     let mut sockets_buffer = [SocketStorage::EMPTY; 1];
 
     // Configuration for smolTCP L2.
-    let config = Config::new(HardwareAddress::Ethernet(ETH_ADDRESS));
+    let config = Config::new(HardwareAddress::Ethernet(MAC_ADDRESS));
 
     // Initialize the L2 device.
     let mut iface = Interface::new(config, &mut device, smoltcp_now());
 
     // Configure IPs and default routes.
     iface.update_ip_addrs(|ip_addrs| {
-        ip_addrs.push(IpCidr::new(MY_IP, 24)).unwrap();
+        ip_addrs.push(IpCidr::new(IP_ADDRESS, 24)).unwrap();
     });
 
     // Create a socket set.
@@ -62,12 +62,12 @@ pub fn run_network_stack(mut device: PxDevice, mut udp_server: UdpMailbox) -> ! 
 
     // Create the UDP socket and add it to the set.
     let mut socket = udp::Socket::new(rx_buffer, tx_buffer);
-    socket.bind(IpEndpoint::new(MY_IP, MY_PORT)).unwrap();
+    socket.bind(IpEndpoint::new(IP_ADDRESS, PORT)).unwrap();
     let handle = sockets.add(socket);
 
     // We support a single connected task and we do not check
     // if it is valid.
-    let task_connected = NameServer::query(&CUSTOMER_APP_TASK_NAME, NetworkEvents::Ticker).unwrap();
+    let task_connected = NameServer::query(&UDP_MIRROR_TASK_NAME, NetworkEvents::Ticker).unwrap();
 
     // TODO
     // Create a ticker that trigger a network event every 100ms...

@@ -1,6 +1,7 @@
+//! Hardcoded from a bindgen invocation for an easier setup
+
 use pxros::bindings::{PxMsgMetadata_t, PxUInt16_t, PxUInt8_t};
 
-// Hardcoded from a bindgen invocation for an easier setup
 pub const PXETH_MAX_FRM_LEN: u32 = 1522;
 pub const ETH_MTU: u32 = 1500;
 

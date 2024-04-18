@@ -11,22 +11,22 @@ use veecle_pxros::pxros::name_server::TaskName;
 use veecle_pxros::pxros::task::TaskCreationConfig;
 use veecle_pxros::pxros::ticker::Ticker;
 
-use crate::app::CustomerApp;
-use crate::network::TcpIpTask;
+use crate::network::NetworkStackTask;
+use crate::udp_mirror::UdpMirrorTask;
 
-mod app;
 mod config;
 mod hardcoded_bindings;
 mod network;
+mod udp_mirror;
 
-/// Task's name for exercise 2.4
-const CUSTOMER_APP_TASK_NAME: TaskName = TaskName::new(5);
+/// UDP mirror task name.
+const UDP_MIRROR_TASK_NAME: TaskName = TaskName::new(5);
 
 /// Definition and configuration of auto-created tasks.
 #[no_mangle]
 pub static TASK_LIST: &[TaskCreationConfig] = &[
-    TaskCreationConfig::from_task::<CustomerApp>("CustomerAppTaskCreation"),
-    TaskCreationConfig::from_task::<TcpIpTask>("TcpIpTaskCreation"),
+    TaskCreationConfig::from_task::<UdpMirrorTask>("UdpMirrorTaskCreation"),
+    TaskCreationConfig::from_task::<NetworkStackTask>("TcpIpTaskCreation"),
 ];
 
 /// Small semantic wrapper for declaring global PXROS services.

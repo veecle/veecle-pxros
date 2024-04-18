@@ -1,4 +1,4 @@
-//! Application code to demonstrate the demo
+//! Example mirroring every UDP datagram to its sender.
 use core::ffi::CStr;
 
 use pxros::bindings::*;
@@ -7,28 +7,23 @@ use veecle_pxros::pxros::name_server::TaskName;
 use veecle_pxros::pxros::task::PxrosTask;
 
 use crate::network::udp::{UdpMailbox, UdpMessage};
-use crate::{Service, CUSTOMER_APP_TASK_NAME};
+use crate::{Service, UDP_MIRROR_TASK_NAME};
 
 bitflags::bitflags! {
-    /// Events used by the application
+    /// Events used by the UDP mirror.
     #[derive(Copy, Clone)]
-    pub struct AppEvents: u32 {
+    pub struct UdpMirrorEvents: u32 {
         const Ticker = 0b0001_0000;
     }
 }
 
-/// Example application running on core 2 at priority 10.
-///
-/// This application opens a socket via the network task and performs
-/// basic gateway functionalities by forwarding packets between parties.
-///
-/// No special permission or resource is required.
-pub(crate) struct CustomerApp;
+/// Mirrors every UDP datagram to its sender.
+pub(crate) struct UdpMirrorTask;
 
-impl PxrosTask for CustomerApp {
+impl PxrosTask for UdpMirrorTask {
     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
         // Wait for the global UDP service to start on core 1.
-        let tx_mailbox = Service::Network.wait_for_service(PXCORE_1, AppEvents::Ticker)?;
+        let tx_mailbox = Service::Network.wait_for_service(PXCORE_1, UdpMirrorEvents::Ticker)?;
 
         // Register the socket.
         let mut udp = UdpMailbox::register(mailbox);
@@ -61,11 +56,11 @@ impl PxrosTask for CustomerApp {
     }
 
     fn task_name() -> Option<TaskName> {
-        Some(CUSTOMER_APP_TASK_NAME)
+        Some(UDP_MIRROR_TASK_NAME)
     }
 
     fn debug_name() -> &'static CStr {
-        CStr::from_bytes_with_nul("Customer_App_Task\0".as_bytes())
+        CStr::from_bytes_with_nul("Udp_Mirror_Task\0".as_bytes())
             .expect("The debug name should be a valid, zero-terminated C string.")
     }
 

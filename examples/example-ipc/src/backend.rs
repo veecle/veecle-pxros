@@ -1,5 +1,6 @@
 //! Hidden backend code for the exercise 2 to validate flags
 
+use core::ffi::CStr;
 use core::time::Duration;
 
 use pxros::bindings::PxMbx_t;
@@ -7,6 +8,7 @@ use pxros::PxResult;
 use veecle_pxros::pxros::events::Receiver;
 use veecle_pxros::pxros::messages::MailSender;
 use veecle_pxros::pxros::name_server::{NameServer, TaskName};
+use veecle_pxros::pxros::task::{log_id, PxrosTask};
 use veecle_pxros::pxros::time::time_since_boot;
 
 const VALIDATION_TASK_NAME: TaskName = TaskName::new(2);
@@ -41,47 +43,64 @@ fn ffi_ticker() -> Option<&'static str> {
     }
 }
 
-#[veecle_pxros::pxros_task(task_name = VALIDATION_TASK_NAME, auto_spawn(core = 0, priority = 15))]
-fn validation_task(mailbox: PxMbx_t) -> PxResult<()> {
-    defmt::info!("[Flag task] Started and waiting for signals");
+pub(crate) struct ValidationTask;
+impl PxrosTask for ValidationTask {
+    fn task_name() -> Option<TaskName> {
+        Some(VALIDATION_TASK_NAME)
+    }
 
-    // We receive anything :)
-    let mut receiver = Receiver::new(mailbox, FlagEvents::all());
+    fn debug_name() -> &'static CStr {
+        CStr::from_bytes_with_nul("ValidationTask\0".as_bytes())
+            .expect("The debug name should be a valid, zero-terminated C string.")
+    }
 
-    const PRINT_FLAG: &[u8] = b"PdfADhtQnH";
-    const RECEIVE_FLAG: &[u8] = b"5h4eZ6wOZH";
-    const SALT_FLAG: &[u8] = b"ItXVjcxhbU";
+    fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
+        let (task_debug_name, current_task_id) = log_id::<Self>();
+        defmt::info!("[{}: {}] Started and waiting for signals", task_debug_name, current_task_id);
 
-    loop {
-        let (events, message) = receiver.receive();
+        // We receive anything :)
+        let mut receiver = Receiver::new(mailbox, FlagEvents::all());
 
-        if !(events & FlagEvents::PrintSecretFlag).is_empty() {
-            let flag = core::str::from_utf8(PRINT_FLAG).unwrap();
-            defmt::info!("[Flag task] Congratulations! The (2.2) flag is: {}", flag);
+        const PRINT_FLAG: &[u8] = b"PdfADhtQnH";
+        const RECEIVE_FLAG: &[u8] = b"5h4eZ6wOZH";
+        const SALT_FLAG: &[u8] = b"ItXVjcxhbU";
 
-            // See below; again this may fail until we user reaches the correct
-            // exercise; to TEST
-            if let Ok(receive_task) = NameServer::try_query(&RECEIVE_TASK_NAME) {
-                let mut receive_sender = MailSender::new(receive_task)?;
-                receive_sender.send_bytes(RECEIVE_FLAG)?;
+        loop {
+            let (events, message) = receiver.receive();
+
+            if !(events & FlagEvents::PrintSecretFlag).is_empty() {
+                let flag = core::str::from_utf8(PRINT_FLAG).unwrap();
+                defmt::info!("[{}: {}] Congratulations! The (2.2) flag is: {}", task_debug_name, current_task_id, flag);
+
+                // See below; again this may fail until we user reaches the correct
+                // exercise; to TEST
+                if let Ok(receive_task) = NameServer::try_query(&RECEIVE_TASK_NAME) {
+                    let mut receive_sender = MailSender::new(receive_task)?;
+                    receive_sender.send_bytes(RECEIVE_FLAG)?;
+                }
             }
-        }
 
-        // This is the last part of the exercise; so the query mail fail until the user
-        // reaches that point
-        if let Ok(salt_task) = NameServer::try_query(&SALT_TASK_NAME) {
-            // # TODO
-            // This may crash? To validate what happens if create more than once
-            let mut salt_sender = MailSender::new(salt_task)?;
+            // This is the last part of the exercise; so the query mail fail until the user
+            // reaches that point
+            if let Ok(salt_task) = NameServer::try_query(&SALT_TASK_NAME) {
+                // # TODO
+                // This may crash? To validate what happens if create more than once
+                let mut salt_sender = MailSender::new(salt_task)?;
 
-            if let Some(mut message) = message {
-                let mut bytes = [0_u8; 10];
-                bytes.copy_from_slice(message.data().expect("Message should contain data."));
+                if let Some(mut message) = message {
+                    let mut bytes = [0_u8; 10];
+                    bytes.copy_from_slice(message.data().expect(" Message should contain data."));
 
-                if bytes == RECEIVE_FLAG {
-                    salt_sender.send_bytes(SALT_FLAG)?;
-                } else if let Err(error) = message.release() {
-                    defmt::info!("Message could not be released: {}", error);
+                    if bytes == RECEIVE_FLAG {
+                        salt_sender.send_bytes(SALT_FLAG)?;
+                    } else if let Err(error) = message.release() {
+                        defmt::info!(
+                            "[{}: {}] Message could not be released: {}",
+                            task_debug_name,
+                            current_task_id,
+                            error
+                        );
+                    }
                 }
             }
         }

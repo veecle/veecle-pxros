@@ -15,8 +15,6 @@ pxros.workspace = true
 static_cell.workspace = true
 pin-project.workspace = true
 
-task-macro = { path = "task-macro" }
-
 [features]
 default = ["rt"]
 # Enable this to import veecle default implementation for
@@ -25,12 +23,11 @@ default = ["rt"]
 # 3. Task autodeployment from Rust
 #
 # If disabled alternative implementation shall be provided
-rt = ["task-macro/auto_spawn"]
+rt = []
 
 [workspace]
 resolver = "2"
 members = [
-    "task-macro",
     "examples/example-*",
     "xtask",
 ]

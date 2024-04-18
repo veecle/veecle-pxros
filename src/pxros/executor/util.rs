@@ -14,8 +14,8 @@
 /// # #![feature(type_alias_impl_trait)]
 /// # #![feature(macro_metavar_expr)]
 /// # use pxros::PxResult;
-/// # use task_macro::pxros_task;
 /// # use pxros::bindings::PxMbx_t;
+/// # use veecle_pxros::pxros::task::PxrosTask;
 /// # use veecle_pxros::pxros_run;
 /// /// Declare the superset of events supported by the executor
 /// bitflags::bitflags! {
@@ -34,15 +34,17 @@
 ///     todo!()
 /// }
 ///
-/// #[pxros_task]
-/// fn async_executor(mailbox: PxMbx_t) -> PxResult<()> {
-///     let result = pxros_run!(mailbox, AsyncEvent, PxResult<i64>, foo(10), bar());
+/// struct AsyncExecutor;
+/// impl PxrosTask for AsyncExecutor {
+///     fn task_main(mailbox: PxMbx_t) -> PxResult<()> {
+///         let result = pxros_run!(mailbox, AsyncEvent, PxResult<i64>, foo(10), bar());
 ///
-///     // All task completed
-///     result
-///         .iter()
-///         .for_each(|result| defmt::info!("My result is {:?}", result));
-///     Ok(())
+///         // All task completed
+///         result
+///             .iter()
+///             .for_each(|result| defmt::info!("My result is {:?}", result));
+///         Ok(())
+///     }
 /// }
 /// ```
 #[macro_export]

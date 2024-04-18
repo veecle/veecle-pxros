@@ -7,7 +7,7 @@ use pxros::PxResult;
 use veecle_pxros::pxros::ticker::AsyncTicker;
 use veecle_pxros::pxros_run;
 
-use crate::TickerEvents;
+use crate::{AsyncExecutorTask, TickerEvents};
 
 /// Invoke periodically with the correct timing to yield a specific sequence of numbers.
 fn read_sensor_1() -> u32 {
@@ -79,21 +79,23 @@ async fn sensor_2(ticker: AsyncTicker<TickerEvents>) -> PxResult<u32> {
     Ok(number)
 }
 
-/// This function shall use the [pxros_run] macro to spawn two async tasks via
-/// [sensor_1] and [sensor_2] functions.
-///
-/// Each async task shall return a `u32` value to the executor, which can be then collected as
-/// an array via `let = pxros_run!(...)`.
-///
-/// Each returned `u32` shall then be submit via [submit_result]: if correct the flag shall
-/// be printed.
-pub fn ex3_2_solution(mailbox: PxMbx_t) {
-    let ticker_1 = AsyncTicker::every(TickerEvents::Ticker1, Duration::from_millis(150)).unwrap();
-    let ticker_2 = AsyncTicker::every(TickerEvents::Ticker2, Duration::from_millis(220)).unwrap();
+impl AsyncExecutorTask {
+    /// This function shall use the [pxros_run] macro to spawn two async tasks via
+    /// [sensor_1] and [sensor_2] functions.
+    ///
+    /// Each async task shall return a `u32` value to the executor, which can be then collected as
+    /// an array via `let = pxros_run!(...)`.
+    ///
+    /// Each returned `u32` shall then be submit via [submit_result]: if correct the flag shall
+    /// be printed.
+    pub fn ex3_2_solution(mailbox: PxMbx_t) {
+        let ticker_1 = AsyncTicker::every(TickerEvents::Ticker1, Duration::from_millis(150)).unwrap();
+        let ticker_2 = AsyncTicker::every(TickerEvents::Ticker2, Duration::from_millis(220)).unwrap();
 
-    let result = pxros_run!(mailbox, TickerEvents, PxResult<u32>, sensor_1(ticker_1), sensor_2(ticker_2));
+        let result = pxros_run!(mailbox, TickerEvents, PxResult<u32>, sensor_1(ticker_1), sensor_2(ticker_2));
 
-    let sensor_1 = result[0].unwrap().unwrap();
-    let sensor_2 = result[1].unwrap().unwrap();
-    submit_result(sensor_1, sensor_2);
+        let sensor_1 = result[0].unwrap().unwrap();
+        let sensor_2 = result[1].unwrap().unwrap();
+        submit_result(sensor_1, sensor_2);
+    }
 }

@@ -44,7 +44,7 @@ Finally, to facilitate flashing and debugging on AURIX Veecle is maintaining the
 For additional information visit:
 * https://www.veecle.io/aurix
 * https://www.bluewind.it/rust
-* https://hightec-rt.com/en/rust
+* https://hightec-rt.com/rust
 
 # Getting started
 
@@ -61,13 +61,17 @@ Next, **CMake** is used to compile the PXROS kernel and C tasks defined in the *
 
 1. Install [rustup](https://rustup.rs) and this [toolchain](./rust-toolchain.toml): this is needed by Rust Analyzer to compile and test tricore-agnostic code and by HighTec's installer to configure the default toolchain.
 
-2. Install HighTec's [Rust](https://hightec-rt.com/en/products/rust) and [C/C++ LLVM](https://hightec-rt.com/en/products/development-platform) compiler toolchains. Register and follow their installation instruction.
+2. Install HighTec's [Rust](https://hightec-rt.com/en/rust-evaluation) compiler toolchain. Register and follow their installation instruction.
 
 3. If on Windows, install Infineon's [DAS and MEMTOOL](https://www.infineon.com/cms/en/tools/aurix-tools/free-tools/infineon): these tools are required to utilize [tricore-probe](https://github.com/veecle/tricore-probe). If you are using Linux, please follow the guidelines provided in the repository.
 
 4. Install **tricore-probe** via `cargo +nightly install --git https://github.com/veecle/tricore-probe tricore-probe`. Make sure the listed requirements are installed.
 
 For additional installation instructions or troubleshooting please also visit [Bluewind's repository](https://github.com/bluewind-embedded-systems/bw-r-drivers-tc37x).
+
+#### Troubleshooting
+
+* Make sure that the environment variable `LIBCLANG_PATH` points to HighTec's toolchain.
 
 ## Building and running
 

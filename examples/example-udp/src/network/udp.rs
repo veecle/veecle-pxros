@@ -13,7 +13,7 @@ pub struct UdpMessage<'a> {
 }
 
 impl<'a> UdpMessage<'a> {
-    /// Create a new UdpMessage from raw fields.
+    /// Creates a new UdpMessage from raw fields.
     pub fn new(endpoint: impl Into<IpEndpoint>, payload: &'a [u8]) -> UdpMessage<'a> {
         Self {
             endpoint: endpoint.into(),
@@ -21,7 +21,7 @@ impl<'a> UdpMessage<'a> {
         }
     }
 
-    /// Return the size this structure requires to be serialized into
+    /// Returns the size this structure requires to be serialized into
     /// raw bytes.
     pub fn byte_size(&self) -> usize {
         let ip_size_in_bytes = 4;
@@ -44,7 +44,7 @@ impl<'a> UdpMessage<'a> {
         let port = u16::from_ne_bytes(
             bytes[4..6]
                 .try_into()
-                .expect("A 2 byte slice should always be convertible to a [u8;2]."),
+                .expect("A 2 byte slice should always be convertible to a [u8; 2]."),
         );
 
         let endpoint = IpEndpoint::new(IpAddress::from(ip_v4), port);
@@ -64,12 +64,6 @@ impl<'a> UdpMessage<'a> {
 }
 
 /// Mailbox for processing UDP packets.
-///
-/// ### TODO
-/// * Support tracking of socket handles.
-/// * Support client/server channels.
-/// * Support endpoint configuration and connection.
-/// * Support complex data type for <T: serialize/deserialize> in FFI compatible way.
 #[derive(Debug, Clone, Copy)]
 pub struct UdpMailbox {
     rx_mailbox: PxMbx_t,
@@ -81,7 +75,7 @@ impl UdpMailbox {
         Self { rx_mailbox }
     }
 
-    /// Register a mailbox.
+    /// Registers a mailbox.
     pub fn register(rx_mailbox: PxMbx_t) -> Self {
         UdpMailbox::init(rx_mailbox)
     }

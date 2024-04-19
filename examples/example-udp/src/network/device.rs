@@ -43,7 +43,7 @@ impl PxDevice {
         Ok(mailbox)
     }
 
-    /// Configure [PxNetDrvMsg_t] metadata in the message.
+    /// Configures [PxNetDrvMsg_t] metadata in the message.
     fn set_metadata(&mut self, handle: &mut RawMessage, msg_type: PxNetMsgType_t, size: usize) -> PxResult<()> {
         let mut meta = PxNetDrvMsg_t { m: PxMsgMetadata_t(0) };
 
@@ -55,13 +55,13 @@ impl PxDevice {
         handle.set_metadata(unsafe { meta.m })
     }
 
-    /// Release a message back to the ethernet pool
+    /// Releases a message back to the Ethernet pool.
     fn release_message(&mut self, mut handle: RawMessage) -> PxResult<()> {
         // Clear and prepare message to be used again by sending it to the
-        // Ethernet driver task (RX pool)
+        // Ethernet driver task (RX pool).
         self.set_metadata(&mut handle, PxNetMsgType_t::PXNET_DRV_RXBUF, 0)?;
 
-        // Release it to the driver; if failure free the memory
+        // Release it to the driver; if failure free the memory.
         handle.send(self.tx_mailbox).map_err(|error| {
             defmt::warn!("Error {:?} while sending message: {:?}", error, handle);
             handle.release().expect("Could not release message.");
@@ -74,8 +74,6 @@ impl PxDevice {
     ///
     /// This function does not block.
     fn try_receive(&mut self) -> PxResult<Option<RxToken>> {
-        // TODO
-        // Design receive_no_wait to return PxResult<Option<..>>
         match RawMessage::receive_no_wait(self.rx_mailbox) {
             Ok(handle) => Ok(Some(RxToken { device: *self, handle })),
             Err(PxError_t::PXERR_MSG_NOMSG) => Ok(None),
@@ -87,10 +85,10 @@ impl PxDevice {
     fn request_tx(&mut self, size: usize) -> PxResult<RawMessage> {
         let mut handle = RawMessage::request(size as u32, PxMc_t::default(), PxOpool_t::default())?;
 
-        // Prepare the metadata for transmission
+        // Prepare the metadata for transmission.
         self.set_metadata(&mut handle, PxNetMsgType_t::PXNET_DRV_OUTPKT, size)?;
 
-        // Set to await-release
+        // Set to await-release.
         handle.set_await_release()?;
 
         Ok(handle)
@@ -213,13 +211,13 @@ impl phy::TxToken for TxToken {
     {
         let mut handle = self.device.request_tx(len).expect("Failed to allocate message.");
 
-        // Obtain the payload and apply the callback
+        // Obtain the payload and apply the callback.
         let payload: &mut [u8] = handle.data_mut().expect("Could not get handle to message data.");
         let ret = f(payload);
 
         defmt::debug!("TxToken: {:?}", payload);
 
-        // Finally, send the message and panic on error for now
+        // Finally, send the message and panic on error for now.
         self.device.send(handle).expect("Failed to send message.");
 
         ret

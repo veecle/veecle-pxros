@@ -10,6 +10,3 @@ pub const IP_ADDRESS: IpAddress = IpAddress::v4(192, 168, 2, 10);
 
 /// Port of the device.
 pub const PORT: u16 = 5000;
-
-/// Maximum supported UDP MTU.
-pub const UDP_MTU: usize = 256;

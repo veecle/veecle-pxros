@@ -1,4 +1,4 @@
-//! Example mirroring every UDP datagram to its sender.
+//! Task mirroring every UDP datagram to its sender.
 use core::ffi::CStr;
 
 use pxros::bindings::*;
@@ -7,7 +7,8 @@ use veecle_pxros::pxros::name_server::TaskName;
 use veecle_pxros::pxros::task::PxrosTask;
 
 use crate::network::udp::{UdpMailbox, UdpMessage};
-use crate::{Service, UDP_MIRROR_TASK_NAME};
+use crate::service::Service;
+use crate::UDP_MIRROR_TASK_NAME;
 
 bitflags::bitflags! {
     /// Events used by the UDP mirror.

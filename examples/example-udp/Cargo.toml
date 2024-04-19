@@ -17,13 +17,7 @@ defmt.workspace = true
 pxros.workspace = true
 veecle-pxros = { workspace = true, features = ["rt"] }
 
-[dependencies.smoltcp]
-git = "https://github.com/daniel-veecle/smoltcp"
-branch = "veecle-demo"
-default-features = false
-features = [
-    "defmt",
+smoltcp = { version = "0.11.0", default-features = false, features = ["defmt",
     "medium-ethernet",
     "proto-ipv4",
-    "socket-udp",
-]
+    "socket-udp", ] }

@@ -11,13 +11,13 @@ use pxros::PxResult;
 use veecle_pxros::pxros::task::PxrosTask;
 
 use crate::network::udp::UdpMailbox;
-use crate::Service;
+use crate::service::Service;
 
 bitflags::bitflags! {
     /// Events used by the network stack task.
     #[derive(Copy, Clone)]
     pub struct NetworkEvents: u32 {
-        /// A Ethernet packet is ready to be received.
+        /// An Ethernet packet is ready to be received.
         const EthernetEvent = 0b0000_1000;
         /// Ticker
         const Ticker = 0b0000_0100;
@@ -36,7 +36,7 @@ extern "C" fn mbx_handler(arg1: PxMsg_t, _: PxMsgType_t, arg3: PxArg_t) -> PxMsg
 
 /// Network stack task.
 ///
-/// This tasks runs an instance of the network stack. It requires exclusive access to the following global mailboxes:
+/// This task runs an instance of the network stack. It requires exclusive access to the following global mailboxes:
 /// * [PxMbxReq_t::_PxSrv1_ReqMbxId]: this is used to communicate with the Ethernet "C" driver.
 /// * [PxMbxReq_t::_PxSrv2_ReqMbxId]: this is used by other tasks to send UDP packets (temporary and ugly solution).
 pub(crate) struct NetworkStackTask;
@@ -46,9 +46,9 @@ impl PxrosTask for NetworkStackTask {
         // Wait for the Ethernet driver service task on PXCORE_0 to get initialized. Synchronization point.
         let tx_mailbox = Service::Ethernet
             .wait_for_service(PXCORE_0, NetworkEvents::Ticker)
-            .expect("Failed to query ethernet service");
+            .expect("Failed to query Ethernet service");
 
-        // Attach callback to my mailbox to know when ETH arrives.
+        // Attach callback to this tasks mailbox to know when ETH arrives.
         let task = PxGetId().as_raw();
         let err =
             unsafe { PxMbxInstallHnd(mailbox, Some(mbx_handler), PxMsgType_t::PXMsgNormalMsg, PxArg_t(task as i32)) };

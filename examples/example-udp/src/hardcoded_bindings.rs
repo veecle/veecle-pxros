@@ -1,4 +1,9 @@
-//! Hardcoded from a bindgen invocation for an easier setup
+//! Hardcoded from a bindgen invocation for an easier setup.
+//!
+//! Typically, these bindings would be generated on the fly by [bindgen].
+//! To simplify the setup for this example, the generated bindings are hardcoded and included here.
+//!
+//! [bindgen]: https://github.com/rust-lang/rust-bindgen
 
 use pxros::bindings::{PxMsgMetadata_t, PxUInt16_t, PxUInt8_t};
 

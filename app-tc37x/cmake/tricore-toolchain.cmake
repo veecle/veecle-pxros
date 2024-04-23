@@ -7,7 +7,7 @@ set(target tricore)
 
 if (CMAKE_HOST_WIN32)
     set (EXE .exe)
-    set(HIGHTEC_BASE_PATH C:/HighTec/toolchains/tricore/v8.1.1/bin)
+    set(HIGHTEC_BASE_PATH C:/HighTec/toolchains/tricore/v8.1.2/bin)
 endif()
 if (CMAKE_HOST_UNIX)
     set(HIGHTEC_BASE_PATH /opt/toolchains/tricore/v8.1.2/bin)

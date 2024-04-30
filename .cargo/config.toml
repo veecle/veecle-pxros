@@ -13,8 +13,8 @@ DEFMT_LOG = "info"
 xtask = "run --package xtask --"
 
 [target.tc162-htc-none]
-# Default dwarf version of v0.2.0 HighTec compiler is version 2 which is
-# incompatible with defmt location information
+# The default dwarf version of the HighTec compiler is version 2 in v0.2.0,
+# and version 3 in v1.0.0, both versions being incompatible with defmt location information
 rustflags = ["-Z", "dwarf-version=4"]
 
 [registries]

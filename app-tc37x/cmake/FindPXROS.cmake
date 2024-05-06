@@ -1,15 +1,11 @@
 # SPDX-FileCopyrightText: HighTec EDV-Systeme GmbH
 # SPDX-License-Identifier: Boost Software License - Version 1.0
 
-set(pxros_root_dir $ENV{PXROS_ROOT_PATH})
-
 find_library(LIB_PX libpx.a HINTS ${pxros_root_dir}/lib/tc162 NO_DEFAULT_PATH)
 
 if(LIB_PX STREQUAL LIB_PX-NOTFOUND)
     message(FATAL_ERROR "Could not find PXROS installation in '${pxros_root_dir}'.")
 endif()
-
-set(pxros_utils_dir $ENV{PXROS_UTILS})
 
 find_library(LIB_PXN libnameserver.a HINTS ${pxros_utils_dir}/lib/tc162 NO_DEFAULT_PATH)
 

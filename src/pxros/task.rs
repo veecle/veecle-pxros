@@ -2,6 +2,7 @@
 
 use core::ffi::CStr;
 
+use bitflags::bitflags;
 use pxros::bindings::*;
 use pxros::mem::{MemoryRegion, Privileges, StackSpec};
 use pxros::PxResult;
@@ -106,13 +107,12 @@ pub trait PxrosTask {
 
     /// Returns the access rights of the task.
     ///
-    /// Corresponds to [`PxTaskSpec_T::ts_accessrights`].
+    /// Override this function to provide custom values for
+    /// the [PxAccess] of this task.
     ///
-    /// Override this function to provide custom values for the [`PxTaskSpec_T`] of this task.
-    ///
-    /// Defaults to 0 (no access rights).
-    fn access_rights() -> u32 {
-        0
+    /// Defaults to [PxAccess::empty()]: no access.
+    fn access_rights() -> PxAccess {
+        PxAccess::empty()
     }
 
     /// Returns the stack size of the task in bytes.
@@ -311,7 +311,7 @@ pub trait PxrosTask {
             ts_context: PxTaskContext_ct(Self::task_context() as *const _),
             ts_protect_region: PxProtectRegion_ct(Self::memory_protection_regions().as_ptr()),
             ts_privileges: Self::privileges(),
-            ts_accessrights: Self::access_rights(),
+            ts_accessrights: Self::access_rights().bits(),
 
             // Scheduling
             ts_timeslices: Self::timeslices(),
@@ -644,5 +644,50 @@ impl TaskCreationConfigBuilder {
             task_config: self.task_config,
             overrides: self.overrides,
         }
+    }
+}
+
+bitflags! {
+    /// Specifies the access rights of the task.
+    ///
+    /// Different access classes exist, and the access right is defined as a bit mask of the
+    /// allowed access classes.
+    pub struct PxAccess: u32 {
+        /// The right to execute PxHndcalls and install interrupt handlers with system privileges.
+        const HANDLERS = PXACCESS_HANDLERS;
+        /// The right to install interrupt handlers which are executed as PXROS handlers like delay jobs and normal interrupts.
+        const INSTALL_HANDLERS = PXACCESS_INSTALL_HANDLERS;
+        /// The right to install PXROS services as handlers.
+        const INSTALL_SERVICES = PXACCESS_INSTALL_SERVICES;
+        /// The right to execute system functions with access to special core registers, these functions are normally processor dependent.
+        const REGISTERS = PXACCESS_REGISTERS;
+        /// The right to allocate from the system default resources PXMcSystemdefault and PXOpoolSystemdefault.
+        const SYSTEM_DEFAULT = PXACCESS_SYSTEMDEFAULT;
+        /// The right to access resources which are not owned by the task itself, i.e., not Taskdefault and not created by the task itself.
+        const RESOURCES = PXACCESS_RESOURCES;
+        /// The right to create new resources, i.e., new objectpools and memory classes.
+        const NEW_RESOURCES = PXACCESS_NEW_RESOURCES;
+        /// The right to execute special system functions which can influence the system behavior (e.g., PxSetMessagefun, PxTaskSuspend).
+        const SYSTEM_CONTROL = PXACCESS_SYSTEM_CONTROL;
+        /// The right for a task to set its modebits, a task may always clear its modebits.
+        const MODE_BITS = PXACCESS_MODEBITS;
+        /// The right to override the aborting events from PxExpectAbort; a task can use aborting events itself inside a supervised function.
+        const OVERRIDE_ABORT_EVENTS = PXACCESS_OVERRIDE_ABORT_EVENTS;
+        /// The right to create a task.
+        const TASK_CREATE = PXACCESS_TASK_CREATE;
+        /// The right to create a task with a higher priority.
+        const TASK_CREATE_HIGHER_PRIO = PXACCESS_TASK_CREATE_HIGHER_PRIO;
+        /// The right for a task to set its priority to a higher priority than the one it has been created with.
+        const TASK_SET_HIGHER_PRIO = PXACCESS_TASK_SET_HIGHER_PRIO;
+        /// The right for a task to change its priority to a lower priority than the one it has been created with.
+        const CHANGE_PRIO = PXACCESS_CHANGE_PRIO;
+        /// The right for a task to restore its access rights to those it has been created with.
+        const TASK_RESTORE_ACCESS_RIGHTS = PXACCESS_TASK_RESTORE_ACCESS_RIGHTS;
+        /// The right to create a task without respecting memory inheritance rule.
+        const TASK_CREATE_HIGHER_ACCESS = PXACCESS_TASK_CREATE_HIGHER_ACCESS;
+        /// The right for a task to use PxTraceCtrl.
+        const TRACE_CTRL = PXACCESS_TRACECTRL;
+        /// The right to allocate from system default resource PXOPoolGlobalSystemdefault.
+        const GLOBAL_OBJECTS = PXACCESS_GLOBAL_OBJECTS;
     }
 }

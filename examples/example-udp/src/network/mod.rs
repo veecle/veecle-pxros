@@ -8,7 +8,7 @@ use core::ffi::CStr;
 use device::*;
 use pxros::bindings::*;
 use pxros::PxResult;
-use veecle_pxros::pxros::task::PxrosTask;
+use veecle_pxros::pxros::task::{PxAccess, PxrosTask};
 
 use crate::network::udp::UdpMailbox;
 use crate::service::Service;
@@ -85,8 +85,8 @@ impl PxrosTask for NetworkStackTask {
         1
     }
 
-    fn access_rights() -> u32 {
-        2
+    fn access_rights() -> PxAccess {
+        PxAccess::INSTALL_HANDLERS
     }
 
     fn task_stack_size() -> u32 {

@@ -1,8 +1,15 @@
 cmake_minimum_required(VERSION 3.19.1)
 
 set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/cmake/tricore-toolchain.cmake)
-
 project(tc37x_pxros_bsp_example LANGUAGES CXX C ASM )
+
+# xtask configuration done via cargo.
+#
+# Paths must be normalized to avoid issues with backslashes on Windows.
+cmake_path(SET pxros_root_dir   NORMALIZE $ENV{PXROS_ROOT_PATH})
+cmake_path(SET pxros_utils_dir  NORMALIZE $ENV{PXROS_UTILS})
+cmake_path(SET illd_base        NORMALIZE $ENV{ILLD_BASE})
+cmake_path(SET illd_precompiled NORMALIZE $ENV{ILLD_PRECOMPILED})
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
@@ -25,13 +32,6 @@ add_compile_options(
     )
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
-if (NOT DEFINED ENV{PXROS_ROOT_PATH})
-    set(ENV{PXROS_ROOT_PATH} ${CMAKE_SOURCE_DIR}/../pxros/pxros-hr/tricore/v8.2.1.eval/kernel)
-endif()
-if (NOT DEFINED ENV{PXROS_UTILS})
-    set(ENV{PXROS_UTILS} ${CMAKE_SOURCE_DIR}/../pxros/pxros-hr/tricore/v8.2.1.eval/utilities)
-endif()
 
 find_package(PXROS)
 get_property(px_includes GLOBAL PROPERTY PXROS_INCLUDES)
@@ -62,9 +62,40 @@ add_custom_target(
     COMMAND_EXPAND_LISTS
 )
 
+file ( GLOB_RECURSE ILLDSRCS 
+    ${illd_base}/iLLD/*.c 
+    ${illd_base}/Service/*.c 
+    ${illd_base}/iLLD/*.c 
+    ${illd_base}/Infra/Platform/*.c 
+    ${illd_base}/Infra/Sfr/*.c
+)
 file ( GLOB_RECURSE SRCS pxros/*.c pxros/*.cpp src/*.c)
 file ( GLOB_RECURSE LIBSRCS bsp/*c crt0/*.S machine/*.c)
 file ( GLOB_RECURSE LIBOS libos/*.c)
+
+# Only when building the iLLD from sources
+if (DEFINED ENV{BUILD_ILLD})
+    add_library(illd STATIC ${ILLDSRCS})
+    
+    target_include_directories(illd PRIVATE
+        illd/illd_cfg
+        ${illd_base}/iLLD/TC37A/Tricore
+        ${illd_base}/Infra/Platform
+        ${illd_base}/Service/CpuGeneric
+        ${illd_base}/Infra/Sfr/TC37A/_Reg
+        ${illd_base}/iLLD/TC37A/Tricore/Gtm/Atom/PwmHl
+        ${illd_base}/iLLD/TC37A/Tricore/Gtm/Tom/PwmHl
+    )
+
+    target_compile_definitions(illd PUBLIC
+        -DNO_WARN_MACHINE_INTRINSICS
+        -D__TC37XX__
+        -DTC37XB
+        -D${BOARD}
+        -DBSP_ISR_SUPPORT_DISABLED
+        -DUC_NB_CORES=${UC_NB_CORES}
+    )
+endif()
 
 add_library(bsp STATIC ${LIBSRCS} )
 target_include_directories(bsp PRIVATE
@@ -102,6 +133,15 @@ target_include_directories(app PRIVATE
     crt0
     machine
     .
+    illd/illd_cfg
+    pxros/tasks/GETHDriver/GETHDriver/include
+    pxros/tasks/GETHDriver/GETHDriver/lib
+    pxros/tasks/GETHDriver/pxnet/include
+    pxros/tasks/GETHDriver/pxnet/DriverTask/include
+    ${illd_base}/iLLD/TC37A/Tricore
+    ${illd_base}/Infra/Platform
+    ${illd_base}/Service/CpuGeneric
+    ${illd_base}/Infra/Sfr/TC37A/_Reg
     ${px_includes})
 
 target_compile_definitions(app PUBLIC
@@ -114,10 +154,14 @@ target_compile_definitions(app PUBLIC
 )
 add_dependencies(app tc37x_pxros_bsp_example.ld)
 
-
 file(WRITE null.c "")
 add_executable(${PROJECT_NAME}.elf null.c )
-target_link_libraries(${PROJECT_NAME}.elf PUBLIC app bsp os)
+target_link_libraries(${PROJECT_NAME}.elf PUBLIC app bsp os illd)
+
+# If BUILD_ILLD is not set we use the precompiled librarty
+if (NOT DEFINED ENV{BUILD_ILLD})
+    target_link_directories(${PROJECT_NAME}.elf BEFORE PUBLIC ${illd_precompiled})
+endif()
 
 # set the build type of the rust application values: debug/release
 set(RUST_BUILD_TYPE debug)

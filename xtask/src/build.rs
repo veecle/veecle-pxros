@@ -3,6 +3,7 @@ use std::{env, fs, process};
 
 use anyhow::{bail, Context};
 use clap::Parser;
+use normpath::PathExt;
 
 use crate::{detect_tricore_toolchain, execute_command, query_workspace_root_location};
 
@@ -42,6 +43,12 @@ pub struct Options {
     /// make job count ("-j").
     #[arg(long, required = false, default_value_t = 4)]
     pub jobs: usize,
+
+    /// Compile Infineon iLLD drivers from sources, else use the precompiled ones.
+    ///
+    /// This is an expensive operation so it is disabled by default.
+    #[arg(long, required = false)]
+    pub build_illd: bool,
 }
 
 /// Tricore probe log level.
@@ -144,26 +151,43 @@ pub fn build(options: Options) -> anyhow::Result<()> {
 
     env::set_current_dir(workspace_root_dir.join(options.app_folder))?;
 
-    let make_result = make_pxros(build_directory.to_str().expect("Path should be valid UTF-8."), options.jobs);
+    let build_directory = build_directory.to_str().expect("Path should be valid UTF-8.");
+    let make_result = make_pxros(build_directory, options.jobs, options.build_illd);
 
     env::set_current_dir(current_directory)?;
 
     make_result
 }
 
+/// Helper to transform a &str to a normalized String.
+fn to_os_path(path: &str) -> String {
+    PathBuf::from(path)
+        .normalize()
+        .expect("Could not normalize path")
+        .into_os_string()
+        .into_string()
+        .unwrap()
+}
+
 /// Wraps calls to PXROS (c)make.
 ///
 /// This function is not inlined because we want to revert and go back to our
 /// old folder even if we encounter an error.
-fn make_pxros(build_dir: &str, make_job_count: usize) -> anyhow::Result<()> {
-    let env_vars = [
-        ("PXROS_ROOT_PATH", pxros_hr::TRI_8_2_1_EVAL_KERNEL),
-        ("PXROS_UTILS", pxros_hr::TRI_8_2_1_EVAL_UTILS),
+fn make_pxros(build_dir: &str, make_job_count: usize, build_illd: bool) -> anyhow::Result<()> {
+    let mut env_vars = vec![
+        ("PXROS_ROOT_PATH", to_os_path(pxros_hr::TRI_8_2_1_EVAL_KERNEL)),
+        ("PXROS_UTILS", to_os_path(pxros_hr::TRI_8_2_1_EVAL_UTILS)),
+        ("ILLD_BASE", to_os_path(illd_rs::ILLD_BASE)),
+        ("ILLD_PRECOMPILED", to_os_path(illd_rs::ILLD_LIB)),
     ];
 
+    if build_illd {
+        env_vars.push(("BUILD_ILLD", "1".into()));
+    }
+
     if !process::Command::new("cmake")
-        .envs(env_vars)
         .args(["-B", build_dir, "--fresh", "-G", "Unix Makefiles"])
+        .envs(env_vars.clone())
         .status()
         .context("Failed to execute cmake.")?
         .success()
@@ -172,8 +196,8 @@ fn make_pxros(build_dir: &str, make_job_count: usize) -> anyhow::Result<()> {
     }
 
     if !process::Command::new("make")
-        .envs(env_vars)
         .args(["--no-print-directory", "-C", build_dir, "clean"])
+        .envs(env_vars.clone())
         .status()
         .context("Failed to execute make.")?
         .success()

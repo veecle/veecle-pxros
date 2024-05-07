@@ -7,6 +7,8 @@ license.workspace = true
 
 [dependencies]
 pxros-hr.workspace = true
+illd-rs.workspace = true
 
 anyhow = "1.0.79"
 clap = { version = "4.5.0", features = ["derive", "string"] }
+normpath = "1.2"

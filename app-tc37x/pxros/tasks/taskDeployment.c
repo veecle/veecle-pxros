@@ -15,14 +15,18 @@
  * SPDX-License-Identifier: Boost Software License - Version 1.0
  *************************************************************************************************/
 
+#include "pxdef.h"
 #include "pxros/config/system_cfg.h"
 #include "pxros/tasks/taskPrios.h"
 #include "pxros/tasks/taskDeployment.h"
+#include "pxros/tasks/GETHDriver/pxnet/DriverTask/include/PxEthDriverCreate.h"
 
 /* Task Deployment Table
  * Task configuration relying on Task default Memory Class and Object pool
  */
-const task_deployment_t taskTable[] = {};
+const task_deployment_t taskTable[] = {
+    { PxEthTaskCreate, GETH_DRIVER_PRIO, PXCORE_0},
+};
 
 /* FUNTION: TaskDeploy
  *     Function calls Task Create function according their core assignment in the taskTable

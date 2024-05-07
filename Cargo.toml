@@ -50,6 +50,7 @@ pin-project = "1.1.3"
 
 pxros = { version = "0.2.0", registry = "htc-cargo-index" }
 pxros-hr = { version = "0.2.0", registry = "htc-cargo-index" }
+illd-rs = { git = "https://github.com/veecle/illd-rs.git" }
 
 veecle-pxros = { path = "." }
 

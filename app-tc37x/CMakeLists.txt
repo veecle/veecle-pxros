@@ -11,6 +11,11 @@ cmake_path(SET pxros_utils_dir  NORMALIZE $ENV{PXROS_UTILS})
 cmake_path(SET illd_base        NORMALIZE $ENV{ILLD_BASE})
 cmake_path(SET illd_precompiled NORMALIZE $ENV{ILLD_PRECOMPILED})
 
+# Whether to include the ethernet driver task.
+if (DEFINED ENV{INCLUDE_ETHERNET_DRIVER_TASK})
+    add_compile_definitions(INCLUDE_ETHERNET_DRIVER_TASK)
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug)
 endif()

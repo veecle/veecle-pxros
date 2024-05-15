@@ -49,6 +49,12 @@ pub struct Options {
     /// This is an expensive operation so it is disabled by default.
     #[arg(long, required = false)]
     pub build_illd: bool,
+
+    /// Include the Ethernet driver task into PXROS task list.
+    ///
+    /// This is required if the Ethernet driver is used.
+    #[arg(long, required = false)]
+    pub include_ethernet_task: bool,
 }
 
 /// Tricore probe log level.
@@ -152,7 +158,7 @@ pub fn build(options: Options) -> anyhow::Result<()> {
     env::set_current_dir(workspace_root_dir.join(options.app_folder))?;
 
     let build_directory = build_directory.to_str().expect("Path should be valid UTF-8.");
-    let make_result = make_pxros(build_directory, options.jobs, options.build_illd);
+    let make_result = make_pxros(build_directory, options.jobs, options.build_illd, options.include_ethernet_task);
 
     env::set_current_dir(current_directory)?;
 
@@ -173,7 +179,12 @@ fn to_os_path(path: &str) -> String {
 ///
 /// This function is not inlined because we want to revert and go back to our
 /// old folder even if we encounter an error.
-fn make_pxros(build_dir: &str, make_job_count: usize, build_illd: bool) -> anyhow::Result<()> {
+fn make_pxros(
+    build_dir: &str,
+    make_job_count: usize,
+    build_illd: bool,
+    include_ethernet_task: bool,
+) -> anyhow::Result<()> {
     let mut env_vars = vec![
         ("PXROS_ROOT_PATH", to_os_path(pxros_hr::TRI_8_2_1_EVAL_KERNEL)),
         ("PXROS_UTILS", to_os_path(pxros_hr::TRI_8_2_1_EVAL_UTILS)),
@@ -183,6 +194,10 @@ fn make_pxros(build_dir: &str, make_job_count: usize, build_illd: bool) -> anyho
 
     if build_illd {
         env_vars.push(("BUILD_ILLD", "1".into()));
+    }
+
+    if include_ethernet_task {
+        env_vars.push(("INCLUDE_ETHERNET_DRIVER_TASK", "1".into()));
     }
 
     if !process::Command::new("cmake")

@@ -24,9 +24,13 @@
 /* Task Deployment Table
  * Task configuration relying on Task default Memory Class and Object pool
  */
+#ifdef INCLUDE_ETHERNET_DRIVER_TASK
 const task_deployment_t taskTable[] = {
     { PxEthTaskCreate, GETH_DRIVER_PRIO, PXCORE_0},
 };
+#else
+const task_deployment_t taskTable[] = {};
+#endif
 
 /* FUNTION: TaskDeploy
  *     Function calls Task Create function according their core assignment in the taskTable

@@ -42,7 +42,7 @@ description = "A runtime for writing automotive and industrial Rust on top of Hi
 
 [workspace.dependencies]
 bitflags = "2.4"
-defmt = "=0.3.6"
+defmt = ">=0.3.8"
 futures = { version = "0.3", default-features = false, features = ["async-await"] }
 heapless = "0.8.0"
 static_cell = "2"

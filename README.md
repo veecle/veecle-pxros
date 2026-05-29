@@ -1,6 +1,6 @@
 # Veecle-pxros
 
-A runtime for writing automotive and industrial Rust on top of HighTec's safety kernel for the Infineon AURIX™ Platform.
+A runtime for writing Rust on top of HighTec's safety kernel for the Infineon AURIX™ Platform.
 
 * **Usability**: The code, examples, and tooling have been designed to minimize friction and allow for a productive developer experience from the get-go.
 * **Future-proof**: Integration with a safety kernel and isolation into memory-protected tasks ensures Rust can be used in critical contexts.
@@ -11,7 +11,7 @@ A runtime for writing automotive and industrial Rust on top of HighTec's safety 
 
 # About Veecle
 
-This repository is part of the **Veecle Development Framework**, serving as the backbone for deploying **Veecle NOS** in critical contexts. Veecle NOS is a cutting-edge, data-driven asynchronous runtime designed specifically for automotive development, written entirely in the Rust programming language.
+This repository is part of the **Veecle Development Framework**, serving as the backbone for deploying **Veecle NOS** in critical contexts. Veecle is a cutting-edge, data-driven asynchronous runtime designed specifically for embedded development, written entirely in the Rust programming language.
 
 NOS empowers carmakers to deliver an experience akin to that of using a smartphone, enabling the rapid development and deployment of digital features directly into existing vehicle systems. NOS layered abstraction model simplifies interaction with vehicle data, enhancing system flexibility.
 
@@ -23,7 +23,7 @@ For licensing, demonstrations, or to learn more about **Veecle's Development Fra
 
 # AURIX™ Rust Startup Ecosystem
 
-The AURIX™ Rust Startup Ecosystem is a collaborative effort involving [Veecle](https://www.veecle.io), [Infineon](https://www.infineon.com), [HighTec](https://hightec-rt.com) and [Bluewind](https://www.bluewind.it) aimed at supporting Rust on Infineon's AURIX™ architecture for automotive and industrial applications. The primary objective is to empower customers to seamlessly integrate Rust tasks alongside existing C implementations for evaluation and pre-development purposes.
+The AURIX™ Rust Startup Ecosystem is a collaborative effort involving [Veecle](https://www.veecle.io), [Infineon](https://www.infineon.com), [HighTec](https://hightec-rt.com) and [Bluewind](https://www.bluewind.it) aimed at supporting Rust on Infineon's AURIX™ architecture for industrial applications. The primary objective is to empower customers to seamlessly integrate Rust tasks alongside existing C implementations for evaluation and pre-development purposes.
 
 <p align="center">
   <img src="./.github/ecosystem.png" alt="AURIX Rust Startup Ecosystem" width="75%"/>
